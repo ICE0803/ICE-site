@@ -1,0 +1,92 @@
+---
+title: "用 Next.js 16 搭建技术博客"
+description: "从零搭建一个支持 MDX、代码高亮与数学公式的个人技术博客，梳理 App Router 下的内容渲染管线。"
+date: "2026-10-05"
+updatedAt: "2026-10-08"
+category: "前端开发"
+tags:
+  - "Next.js"
+  - "MDX"
+  - "TypeScript"
+published: true
+featured: true
+---
+
+## 为什么选择 Next.js 16
+
+Next.js 16 默认启用 Turbopack，构建速度相比 Webpack 有明显提升。对于以静态内容为主的个人博客，App Router 的静态生成能力足够满足需求。
+
+这个博客的几个核心诉求：
+
+- 文章以本地 MDX 文件管理，无需数据库。
+- 支持代码高亮、数学公式和文章目录。
+- 内容与样式解耦，新增文章不需要改动组件代码。
+
+## 文章渲染管线
+
+文章存放在 `content/posts/` 目录下，每篇文章是一个 `.mdx` 文件。渲染时经过以下管线：
+
+1. 用 `gray-matter` 解析 frontmatter 元数据。
+2. 用 `zod` 校验元数据，缺失或格式错误时立即报错。
+3. 用 `next-mdx-remote-client` 编译并渲染正文。
+
+读取文章的典型实现如下：
+
+```ts
+import fs from "node:fs"
+import path from "node:path"
+import matter from "gray-matter"
+
+const postsDirectory = path.join(process.cwd(), "content", "posts")
+
+export function getAllPosts() {
+  const files = fs.readdirSync(postsDirectory).filter((f) => f.endsWith(".mdx"))
+
+  return files
+    .map((file) => {
+      const raw = fs.readFileSync(path.join(postsDirectory, file), "utf-8")
+      const { data, content } = matter(raw)
+      return { slug: file.replace(/\.mdx$/, ""), ...data, content }
+    })
+    .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
+}
+```
+
+## Frontmatter 校验
+
+元数据校验能避免「缺失日期导致排序错乱」这类隐性 bug。用 zod 定义 schema 后，解析失败的字段会给出清晰的错误信息：
+
+```ts
+import { z } from "zod"
+
+const postSchema = z.object({
+  title: z.string().min(1, "title 不能为空"),
+  description: z.string().min(1, "description 不能为空"),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date 必须是 YYYY-MM-DD 格式"),
+  category: z.string().min(1, "category 不能为空"),
+  tags: z.array(z.string()).default([]),
+  published: z.boolean().default(false),
+})
+```
+
+## 静态生成与 404
+
+通过 `generateStaticParams` 在构建期生成所有已发布文章的静态页面：
+
+```ts
+export function generateStaticParams() {
+  return getPublishedPosts().map((post) => ({ slug: post.slug }))
+}
+```
+
+当访问的 slug 不存在时，页面调用 `notFound()`，返回统一的 404 页面，而不是让应用崩溃。
+
+## 小结
+
+这套方案足够轻量，且完全掌控内容的渲染过程。下一篇文章会讨论如何在文章中渲染数学公式，以及自注意力机制背后的数学原理。
+
+| 组件 | 职责 |
+| --- | --- |
+| `gray-matter` | 解析 frontmatter |
+| `zod` | 校验元数据 |
+| `next-mdx-remote-client` | 编译并渲染 MDX |

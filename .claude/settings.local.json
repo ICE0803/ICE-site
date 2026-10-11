@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(npm view *)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npm install *)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(npm uninstall *)",
+      "Bash(grep -rn '$ZodStringParams' node_modules/zod/v4/core/)",
+      "Bash(grep -rn 'interface $ZodStringParams\\\\|type $ZodStringParams\\\\|ZodStringParams =' node_modules/zod/)",
+      "Bash(npm run *)",
+      "Bash(npx next *)",
+      "Bash(curl -s http://localhost:3100/blog/transformer-attention -o /tmp/transformer.html)",
+      "Read(//tmp/**)",
+      "Bash(npx tsc *)"
     ]
   }
 }

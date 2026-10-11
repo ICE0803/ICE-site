@@ -1,0 +1,79 @@
+---
+title: "Agent 工作流设计实践"
+description: "讨论如何设计一个可观测、可回退的 Agent 工作流，涵盖工具调用、状态管理与错误处理。"
+date: "2026-09-15"
+category: "Agent"
+tags:
+  - "Agent"
+  - "LLM"
+  - "工程实践"
+published: true
+---
+
+## 从单次调用到多步工作流
+
+单次模型调用只能完成「输入到输出」的简单映射。Agent 的核心在于把任务拆解为多步：规划、调用工具、观察结果、再决策，直到任务完成。
+
+一个典型的 Agent 循环如下：
+
+```text
+while not done:
+    action = model.plan(state, tools)
+    observation = tools[action.name].run(action.args)
+    state = state.update(action, observation)
+```
+
+## 工具调用
+
+工具是 Agent 与外部世界交互的接口。为了可控性和可观测性，每个工具都应当声明清晰的输入输出 schema，并具备幂等性，避免重复执行造成副作用。
+
+下面是一个带 schema 声明的工具示例：
+
+```ts
+import { z } from "zod"
+
+const searchTool = {
+  name: "search",
+  description: "搜索相关信息",
+  parameters: z.object({
+    query: z.string().describe("搜索关键词"),
+  }),
+  run: async (args: { query: string }) => {
+    return await search(args.query)
+  },
+}
+```
+
+## 状态管理与可观测性
+
+多步执行过程中，每一步的输入、输出和决策都需要被记录。这不仅便于调试，也是实现「回退」的基础：当某一步失败时，可以回到上一步重试，而不是从头再来。
+
+建议将状态建模为不可变快照：
+
+```ts
+type AgentState = {
+  messages: Message[]
+  steps: Step[]
+  done: boolean
+}
+```
+
+每次更新都生成新的状态对象，避免隐式的副作用。
+
+## 错误处理
+
+Agent 执行外部工具时，失败是常态而非异常。一个健壮的工作流需要处理三类错误：
+
+1. 工具执行失败（如网络错误）—— 重试或降级。
+2. 模型输出无法解析 —— 让模型重新生成。
+3. 达到最大步数仍未完成 —— 优雅终止并汇报进度。
+
+## 小结
+
+设计 Agent 工作流的关键不是「让模型更聪明」，而是用清晰的工具契约、不可变状态和显式的错误处理，把不确定的模型输出约束在可控的范围内。
+
+| 关注点 | 设计原则 |
+| --- | --- |
+| 工具 | 声明式 schema，幂等 |
+| 状态 | 不可变快照 |
+| 错误 | 分类处理，可回退 |
