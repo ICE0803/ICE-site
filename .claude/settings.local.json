@@ -13,7 +13,9 @@
       "Bash(npx next *)",
       "Bash(curl -s http://localhost:3100/blog/transformer-attention -o /tmp/transformer.html)",
       "Read(//tmp/**)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(curl -s http://localhost:3105/)",
+      "Bash(grep -o 'data-theme[^,{]*')"
     ]
   }
 }

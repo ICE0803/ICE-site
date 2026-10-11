@@ -2,16 +2,32 @@
 
 @plugin "@tailwindcss/typography";
 
-/* 设计系统 token —— 深色优先，浅色主题可在后续阶段以 .light 覆盖变量接入 */
+/* 冰块风设计 token —— 冷调、清透、冰蓝。
+   默认深色（夜间冰晶），[data-theme="light"] 覆盖为白天（清透冰蓝）。 */
 :root {
-  --background: #0a0a0b;
-  --foreground: #e4e4e7;
-  --muted: #131316;
-  --muted-foreground: #9b9ba3;
-  --border: #27272a;
-  --accent: #8b8ff0;
-  --accent-foreground: #0a0a0b;
-  --ring: #8b8ff0;
+  color-scheme: dark;
+
+  --background: #0a1120;
+  --foreground: #dce7f2;
+  --muted: #101a2c;
+  --muted-foreground: #8ca3ba;
+  --border: #1c2b41;
+  --accent: #6fc3f0;
+  --accent-foreground: #06121f;
+  --ring: #6fc3f0;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --background: #f4f9fd;
+  --foreground: #16283a;
+  --muted: #e8f0f7;
+  --muted-foreground: #5a6f82;
+  --border: #d2e0ec;
+  --accent: #0f7ab0;
+  --accent-foreground: #f4f9fd;
+  --ring: #0f7ab0;
 }
 
 @theme inline {
