@@ -27,7 +27,8 @@
       "Bash(node *)",
       "Bash(curl *)",
       "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --hide-scrollbars --window-size=1440,900 --screenshot=\"D:\\\\ice_personal_site\\\\.shots\\\\projects-dark.png\" --virtual-time-budget=5000 \"http://localhost:3000/projects\")",
-      "Bash(echo \"EXIT=$?\")"
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(grep -o '<nav class=\"glass[^>]*>.\\\\{0,700\\\\}' /tmp/h3.html)"
     ]
   }
 }
