@@ -27,7 +27,6 @@ const postSchema = z.object({
   category: z
     .string({ error: "category 为必填字段" })
     .min(1, "category 不能为空"),
-  tags: z.array(z.string()).default([]),
   published: z.boolean().default(false),
   featured: z.boolean().optional(),
 })
@@ -56,7 +55,6 @@ function parsePostFile(file: string): PostFile {
       date: parsed.date,
       updatedAt: parsed.updatedAt,
       category: parsed.category,
-      tags: parsed.tags,
       published: parsed.published,
       featured: parsed.featured,
       readingTime: readingTime(content),
@@ -97,10 +95,6 @@ export function getAllCategories(): string[] {
   return [...new Set(getPublishedPosts().map((post) => post.category))]
 }
 
-export function getAllTags(): string[] {
-  return [...new Set(getPublishedPosts().flatMap((post) => post.tags))]
-}
-
 export function getAdjacentPosts(slug: string): {
   previous?: Post
   next?: Post
@@ -121,17 +115,6 @@ export function getRelatedPosts(slug: string, count = 3): Post[] {
   if (!current) return []
 
   return published
-    .filter((post) => post.slug !== slug)
-    .map((post) => {
-      const sharedTags = post.tags.filter((tag) => current.tags.includes(tag))
-      const score = sharedTags.length * 2 + (post.category === current.category ? 1 : 0)
-      return { post, score }
-    })
-    .filter(({ score }) => score > 0)
-    .sort(
-      (a, b) =>
-        b.score - a.score || Date.parse(b.post.date) - Date.parse(a.post.date),
-    )
+    .filter((post) => post.slug !== slug && post.category === current.category)
     .slice(0, count)
-    .map(({ post }) => post)
 }

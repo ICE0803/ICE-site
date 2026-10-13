@@ -8,7 +8,7 @@ const currentYear = new Date().getFullYear()
 export function Footer() {
   return (
     <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+      <div className="container-page flex flex-col gap-4 py-8 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           {siteConfig.socials.map((social) => {
             const internal = social.href.startsWith("/")

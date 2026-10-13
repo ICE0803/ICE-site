@@ -50,69 +50,71 @@ export default async function ProjectPage({
   if (!project) notFound()
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <Link
-        href="/projects"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        返回项目
-      </Link>
+    <div className="container-page py-14 sm:py-16">
+      <div className="mx-auto max-w-3xl">
+        <Link
+          href="/projects"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          返回项目
+        </Link>
 
-      <div className="mt-6 flex items-start justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-        <StatusBadge status={project.status} />
+        <div className="mt-6 flex items-start justify-between gap-4">
+          <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
+          <StatusBadge status={project.status} />
+        </div>
+
+        <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+          {project.description}
+        </p>
+
+        {project.techStack.length > 0 && (
+          <section data-reveal className="mt-8">
+            <h2 className="text-lg font-semibold tracking-tight">技术栈</h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {project.techStack.map((tech) => (
+                <span
+                  key={tech}
+                  className="glass-chip rounded-md px-2.5 py-1 text-xs text-muted-foreground"
+                >
+                  {tech}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {(project.github || project.demo) && (
+          <section data-reveal className="mt-8">
+            <h2 className="text-lg font-semibold tracking-tight">链接</h2>
+            <div className="mt-3 flex flex-wrap gap-3">
+              {project.github && (
+                <a
+                  href={project.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  <GithubIcon className="h-4 w-4" />
+                  源码
+                </a>
+              )}
+              {project.demo && (
+                <a
+                  href={project.demo}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-muted"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  在线演示
+                </a>
+              )}
+            </div>
+          </section>
+        )}
       </div>
-
-      <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-        {project.description}
-      </p>
-
-      {project.techStack.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-lg font-semibold tracking-tight">技术栈</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {project.techStack.map((tech) => (
-              <span
-                key={tech}
-                className="rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground"
-              >
-                {tech}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {(project.github || project.demo) && (
-        <section className="mt-8">
-          <h2 className="text-lg font-semibold tracking-tight">链接</h2>
-          <div className="mt-3 flex flex-wrap gap-3">
-            {project.github && (
-              <a
-                href={project.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-muted"
-              >
-                <GithubIcon className="h-4 w-4" />
-                源码
-              </a>
-            )}
-            {project.demo && (
-              <a
-                href={project.demo}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-muted"
-              >
-                <ExternalLink className="h-4 w-4" />
-                在线演示
-              </a>
-            )}
-          </div>
-        </section>
-      )}
     </div>
   )
 }

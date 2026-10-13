@@ -17,8 +17,12 @@ export function Header() {
     href === "/" ? pathname === "/" : pathname.startsWith(href)
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/75 backdrop-blur-md">
-      <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
+    <header
+      data-enter
+      style={{ "--rise": "0px", "--dur": "500ms" } as React.CSSProperties}
+      className="sticky top-0 z-50 border-b border-border bg-background/75 backdrop-blur-md"
+    >
+      <nav className="container-page flex h-14 items-center justify-between">
         <Link
           href="/"
           className="text-sm font-semibold tracking-tight"
@@ -58,7 +62,7 @@ export function Header() {
 
       {open && (
         <div className="border-t border-border md:hidden">
-          <nav className="mx-auto flex max-w-5xl flex-col gap-1 px-4 py-3 sm:px-6">
+          <nav className="container-page flex flex-col gap-1 py-3">
             {siteConfig.nav.map((item) => (
               <Link
                 key={item.href}

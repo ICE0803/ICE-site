@@ -47,9 +47,24 @@ export function ProjectList({ projects }: { projects: Project[] }) {
           该分类下暂无项目。
         </p>
       ) : (
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((project) => (
-            <ProjectCard key={project.slug} project={project} />
+        // 列数跟着实际数量走：一两个项目时留出整行宽度，
+        // 而不是让卡片挤在三列网格的第一格。
+        <div
+          className={cn(
+            "mt-8 grid gap-5",
+            filtered.length >= 2 && "sm:grid-cols-2",
+            filtered.length >= 3 && "lg:grid-cols-3",
+          )}
+        >
+          {filtered.map((project, i) => (
+            <div
+              key={project.slug}
+              data-reveal
+              style={{ "--d": `${i * 90}ms` } as React.CSSProperties}
+              className="flex"
+            >
+              <ProjectCard project={project} />
+            </div>
           ))}
         </div>
       )}

@@ -4,10 +4,6 @@ description: "从零搭建一个支持 MDX、代码高亮与数学公式的个�
 date: "2026-10-05"
 updatedAt: "2026-10-08"
 category: "前端开发"
-tags:
-  - "Next.js"
-  - "MDX"
-  - "TypeScript"
 published: true
 featured: true
 ---
@@ -64,7 +60,6 @@ const postSchema = z.object({
   description: z.string().min(1, "description 不能为空"),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date 必须是 YYYY-MM-DD 格式"),
   category: z.string().min(1, "category 不能为空"),
-  tags: z.array(z.string()).default([]),
   published: z.boolean().default(false),
 })
 ```

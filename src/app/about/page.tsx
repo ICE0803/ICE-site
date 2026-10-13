@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <div className="container-page py-14 sm:py-16">
       <h1 className="text-3xl font-bold tracking-tight">关于</h1>
 
       <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
@@ -21,14 +21,11 @@ export default function AboutPage() {
         {siteConfig.description}
       </p>
 
-      <section className="mt-10">
+      <section data-reveal className="mt-12">
         <h2 className="text-lg font-semibold tracking-tight">当前关注</h2>
         <dl className="mt-4 grid gap-4 sm:grid-cols-3">
           {siteConfig.currently.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-lg border border-border bg-muted p-5"
-            >
+            <div key={item.label} className="glass rounded-xl p-5">
               <dt className="font-medium">{item.label}</dt>
               <dd className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 {item.detail}
@@ -38,7 +35,7 @@ export default function AboutPage() {
         </dl>
       </section>
 
-      <section className="mt-10">
+      <section data-reveal className="mt-12">
         <h2 className="text-lg font-semibold tracking-tight">联系</h2>
         <ul className="mt-4 space-y-3">
           {siteConfig.socials.map((social) => {

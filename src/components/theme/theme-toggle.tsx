@@ -1,40 +1,14 @@
 "use client"
 
-import { useSyncExternalStore } from "react"
 import { Moon, Sun } from "lucide-react"
 
-const STORAGE_KEY = "theme"
-const THEME_EVENT = "themechange"
-
-function getSnapshot(): "light" | "dark" {
-  return document.documentElement.dataset.theme === "light" ? "light" : "dark"
-}
-
-function getServerSnapshot(): "light" | "dark" {
-  return "dark"
-}
-
-function subscribe(callback: () => void) {
-  window.addEventListener("storage", callback)
-  window.addEventListener(THEME_EVENT, callback)
-  return () => {
-    window.removeEventListener("storage", callback)
-    window.removeEventListener(THEME_EVENT, callback)
-  }
-}
+import { setTheme, useTheme } from "@/components/theme/use-theme"
 
 export function ThemeToggle() {
-  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  const theme = useTheme()
 
   const toggle = () => {
-    const next = theme === "dark" ? "light" : "dark"
-    document.documentElement.dataset.theme = next
-    try {
-      localStorage.setItem(STORAGE_KEY, next)
-    } catch {
-      // 存储不可用时忽略，主题仍在本会话内生效
-    }
-    window.dispatchEvent(new Event(THEME_EVENT))
+    setTheme(theme === "dark" ? "light" : "dark")
   }
 
   return (

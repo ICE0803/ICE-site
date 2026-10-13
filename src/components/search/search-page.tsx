@@ -27,8 +27,7 @@ export function SearchPage({ posts }: { posts: Post[] }) {
       (post) =>
         post.title.toLowerCase().includes(q) ||
         post.description.toLowerCase().includes(q) ||
-        post.category.toLowerCase().includes(q) ||
-        post.tags.some((tag) => tag.toLowerCase().includes(q)),
+        post.category.toLowerCase().includes(q),
     )
   }, [posts, query])
 
@@ -44,8 +43,8 @@ export function SearchPage({ posts }: { posts: Post[] }) {
           type="search"
           value={query}
           onChange={(e) => updateQuery(e.target.value)}
-          placeholder="搜索文章标题、摘要、标签或分类…"
-          className="h-10 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          placeholder="搜索文章标题、摘要或分类…"
+          className="glass h-10 w-full rounded-md pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
@@ -56,7 +55,7 @@ export function SearchPage({ posts }: { posts: Post[] }) {
       </p>
 
       {filtered.length === 0 ? (
-        <div className="mt-6 rounded-lg border border-border p-10 text-center">
+        <div className="glass mt-6 rounded-lg p-10 text-center">
           <p className="text-muted-foreground">未找到相关文章</p>
         </div>
       ) : (

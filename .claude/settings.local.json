@@ -15,7 +15,19 @@
       "Read(//tmp/**)",
       "Bash(npx tsc *)",
       "Bash(curl -s http://localhost:3105/)",
-      "Bash(grep -o 'data-theme[^,{]*')"
+      "Bash(grep -o 'data-theme[^,{]*')",
+      "mcp__plugin_figma_figma__whoami",
+      "mcp__plugin_figma_figma__create_new_file",
+      "mcp__plugin_figma_figma__use_figma",
+      "mcp__plugin_figma_figma__get_screenshot",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000__TRACKED_VAR__)",
+      "mcp__plugin_figma_figma__generate_figma_design",
+      "Bash(curl -s \"http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__0cex1ettx1p9a._.css\" -o /tmp/site2.css)",
+      "Bash(curl -s -o /dev/null -w \"status=%{http_code} type=%{content_type} bytes=%{size_download}\\\\n\" \"http://localhost:3000/_next/image?url=%2Fimages%2Fice_hero.png&w=750&q=75\")",
+      "Bash(node *)",
+      "Bash(curl *)",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --hide-scrollbars --window-size=1440,900 --screenshot=\"D:\\\\ice_personal_site\\\\.shots\\\\projects-dark.png\" --virtual-time-budget=5000 \"http://localhost:3000/projects\")",
+      "Bash(echo \"EXIT=$?\")"
     ]
   }
 }

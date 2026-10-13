@@ -7,7 +7,7 @@ import { projects } from "@/data/projects"
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = siteConfig.url.replace(/\/$/, "")
 
-  const staticPages = ["", "/blog", "/projects", "/about", "/archive"].map(
+  const staticPages = ["", "/blog", "/projects", "/about"].map(
     (path) => ({ url: `${baseUrl}${path}` }),
   )
 

@@ -3,7 +3,10 @@ import { Inter, JetBrains_Mono } from "next/font/google"
 
 import { Header } from "@/components/layout/Header"
 import { Footer } from "@/components/layout/Footer"
+import { PageTransition } from "@/components/layout/page-transition"
+import { MotionProvider } from "@/components/motion/motion-provider"
 import { siteConfig } from "@/data/site-config"
+import { motionScript } from "@/lib/motion-script"
 
 import "./globals.css"
 
@@ -60,11 +63,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: motionScript }} />
       </head>
       <body className="flex min-h-full flex-col">
         <Header />
-        <main className="flex-1">{children}</main>
+        <PageTransition>{children}</PageTransition>
         <Footer />
+        <MotionProvider />
       </body>
     </html>
   )

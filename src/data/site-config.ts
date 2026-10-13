@@ -6,7 +6,7 @@ export const siteConfig: SiteConfig = {
   title: "ICE",
   description:
     "个人主页与技术博客，分享关于大模型、Agent、强化学习与后端开发的技术实践与思考。",
-  url: "https://example.com",
+  url: "https://icedhr.vercel.app/",
   author: "ICE",
   email: "2325043156@qq.com",
   github: "https://github.com/ICE0803",
@@ -15,11 +15,10 @@ export const siteConfig: SiteConfig = {
     { label: "博客", href: "/blog" },
     { label: "项目", href: "/projects" },
     { label: "关于", href: "/about" },
-    { label: "归档", href: "/archive" },
   ],
   hero: {
     title: "你好，我是 ICE",
-    subtitle: "一名软件工程专业的本科生，专注于AI，大模型算法，软件开发。喜欢探索并记录自己的思考",
+    subtitle: "在代码与思考之间，持续探索",
     buttons: [
       { label: "查看项目", href: "/projects", variant: "primary" },
       { label: "阅读博客", href: "/blog", variant: "ghost" },
@@ -32,7 +31,7 @@ export const siteConfig: SiteConfig = {
   ],
   socials: [
     { label: "GitHub", href: "https://github.com/ICE0803", icon: "github" },
-    { label: "邮箱", href: "2325043156@qq.com", icon: "mail" },
+    { label: "邮箱", href: "mailto:2325043156@qq.com", icon: "mail" },
     { label: "RSS", href: "/rss.xml", icon: "rss" },
   ],
 }

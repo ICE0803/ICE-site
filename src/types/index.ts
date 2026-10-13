@@ -11,7 +11,6 @@ export type Post = {
   date: string
   updatedAt?: string
   category: string
-  tags: string[]
   published: boolean
   featured?: boolean
   readingTime?: number

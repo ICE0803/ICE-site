@@ -1,10 +1,6 @@
 import type { Metadata } from "next"
 
-import {
-  getAllCategories,
-  getAllTags,
-  getPublishedPosts,
-} from "@/lib/posts"
+import { getAllCategories, getPublishedPosts } from "@/lib/posts"
 import { PostList } from "@/components/blog/post-list"
 
 export const metadata: Metadata = {
@@ -16,16 +12,15 @@ export const metadata: Metadata = {
 export default function BlogPage() {
   const posts = getPublishedPosts()
   const categories = getAllCategories()
-  const tags = getAllTags()
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <div className="container-page py-14 sm:py-16">
       <h1 className="text-3xl font-bold tracking-tight">博客</h1>
       <p className="mt-2 text-muted-foreground">
-        记录技术实践与思考，按分类和标签浏览。
+        记录技术实践与思考，按分类浏览。
       </p>
       <div className="mt-8">
-        <PostList posts={posts} categories={categories} tags={tags} />
+        <PostList posts={posts} categories={categories} />
       </div>
     </div>
   )

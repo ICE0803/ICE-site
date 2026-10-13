@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function ProjectsPage() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <div className="container-page py-14 sm:py-16">
       <h1 className="text-3xl font-bold tracking-tight">项目</h1>
       <p className="mt-3 text-muted-foreground">
         这里是我参与和开发的项目，按状态筛选查看。

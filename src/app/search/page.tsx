@@ -14,10 +14,10 @@ export default function SearchPageRoute() {
   const posts = getPublishedPosts()
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+    <div className="container-page py-14 sm:py-16">
       <h1 className="text-3xl font-bold tracking-tight">搜索</h1>
       <p className="mt-2 text-muted-foreground">
-        搜索文章标题、摘要、标签或分类。
+        搜索文章标题、摘要或分类。
       </p>
       <div className="mt-8">
         <Suspense

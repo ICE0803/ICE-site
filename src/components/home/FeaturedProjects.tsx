@@ -9,22 +9,39 @@ export function FeaturedProjects() {
 
   if (featured.length === 0) return null
 
+  // 只有一张卡片时不强行补占位数据，用单列让它自然占满整行。
+  const columns =
+    featured.length === 1
+      ? ""
+      : featured.length === 2
+        ? "sm:grid-cols-2"
+        : "sm:grid-cols-2 lg:grid-cols-3"
+
   return (
-    <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold tracking-tight">精选项目</h2>
+    <section className="container-page py-16 sm:py-20">
+      <div data-reveal className="mb-8 flex items-end justify-between gap-4">
+        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          精选项目
+        </h2>
         <Link
           href="/projects"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex shrink-0 items-center gap-1 pb-1 text-sm text-muted-foreground transition-colors hover:text-accent"
         >
           查看全部
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {featured.map((project) => (
-          <ProjectCard key={project.slug} project={project} />
+      <div className={`grid gap-5 ${columns}`}>
+        {featured.map((project, i) => (
+          <div
+            key={project.slug}
+            data-reveal
+            style={{ "--d": `${i * 90}ms` } as React.CSSProperties}
+            className="flex"
+          >
+            <ProjectCard project={project} />
+          </div>
         ))}
       </div>
     </section>

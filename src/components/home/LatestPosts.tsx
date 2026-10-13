@@ -8,12 +8,14 @@ export function LatestPosts() {
   const posts = getLatestPosts(3)
 
   return (
-    <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold tracking-tight">最新文章</h2>
+    <section className="container-page py-16 sm:py-20">
+      <div data-reveal className="mb-8 flex items-end justify-between gap-4">
+        <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          最新文章
+        </h2>
         <Link
           href="/blog"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex shrink-0 items-center gap-1 pb-1 text-sm text-muted-foreground transition-colors hover:text-accent"
         >
           查看全部
           <ArrowRight className="h-4 w-4" />
@@ -21,40 +23,33 @@ export function LatestPosts() {
       </div>
 
       {posts.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <p data-reveal className="text-sm text-muted-foreground">
           文章即将发布，敬请期待。
         </p>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
-          {posts.map((post) => (
-            <li key={post.slug}>
+        <ul className="border-t border-border">
+          {posts.map((post, i) => (
+            <li
+              key={post.slug}
+              data-reveal
+              style={{ "--d": `${i * 90}ms` } as React.CSSProperties}
+              className="border-b border-border"
+            >
               <Link
                 href={`/blog/${post.slug}`}
-                className="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between"
+                className="group -mx-3 flex flex-col gap-2 rounded-lg px-3 py-5 transition-colors hover:bg-muted/60 sm:flex-row sm:items-baseline sm:gap-6 lg:py-6"
               >
-                <div className="min-w-0">
-                  <h3 className="font-medium transition-colors group-hover:text-accent">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base font-medium transition-colors group-hover:text-accent sm:text-lg">
                     {post.title}
                   </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                     {post.description}
                   </p>
-                  {post.tags.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-                      {post.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs text-muted-foreground"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 <time
                   dateTime={post.date}
-                  className="shrink-0 text-sm text-muted-foreground"
+                  className="shrink-0 text-sm tabular-nums text-muted-foreground"
                 >
                   {formatDate(post.date)}
                 </time>

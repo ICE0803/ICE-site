@@ -85,7 +85,7 @@ export default async function Page({
     <>
       <ReadingProgress />
 
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <div className="container-page py-14 sm:py-16">
         <div className="flex justify-center gap-8">
           <article className="min-w-0 max-w-3xl flex-1">
             <header>
@@ -108,21 +108,9 @@ export default async function Page({
                 <span aria-hidden>·</span>
                 <span>{post.readingTime} 分钟阅读</span>
               </div>
-              {post.tags.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              )}
             </header>
 
-            <div className="prose prose-invert mt-10 max-w-none">
+            <div className="prose mt-10 max-w-none">
               {evaluated.content}
             </div>
 
