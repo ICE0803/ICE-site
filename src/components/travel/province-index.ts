@@ -72,9 +72,8 @@ export const provinces: ProvinceEntry[] = [
     adcode: 710000,
     subLevelLabel: "县市",
     subLevel: "city",
-    // 数据源没有提供台湾省的下一级边界。这里只说明缺失，
-    // 不用简化轮廓或示意图冒充行政区划。
-    unavailableReason: "数据源未提供台湾省的下一级行政区边界。",
+    // 县市数据包含金门、连江与澎湖，范围覆盖本岛及主要离岛。
+    bounds: [118.1, 21.8, 122.1, 26.4],
   },
   { name: "香港特别行政区", adcode: 810000, subLevelLabel: "区", subLevel: "district" },
   { name: "澳门特别行政区", adcode: 820000, subLevelLabel: "堂区", subLevel: "district" },

@@ -141,7 +141,9 @@ export function TravelMap({
     })
 
     // 容器尺寸变化（窗口缩放、字体加载完成）后重绘，避免边界被拉伸。
-    const observer = new ResizeObserver(() => chart.resize())
+    const observer = new ResizeObserver(() => {
+      if (!chart.isDisposed()) chart.resize()
+    })
     observer.observe(el)
 
     return () => {

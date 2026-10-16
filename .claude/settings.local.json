@@ -41,7 +41,11 @@
       "Bash(npx eslint *)",
       "Bash(echo \"eslint=$?\")",
       "Bash(awk 'NR>=4400 && NR<=4470' node_modules/echarts/types/dist/shared.d.ts)",
-      "Bash(awk 'NR<=4462' node_modules/echarts/types/dist/shared.d.ts)"
+      "Bash(awk 'NR<=4462' node_modules/echarts/types/dist/shared.d.ts)",
+      "Bash(python *)",
+      "Bash(python -c ' *)",
+      "Bash(python3 -c \"print\\('python failed'\\)\")",
+      "Bash(command -v apply_patch)"
     ]
   }
 }

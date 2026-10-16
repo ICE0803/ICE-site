@@ -374,6 +374,20 @@
    ]
   },
   {
+   "adcode": 710000,
+   "name": "台湾省",
+   "level": "city",
+   "count": 22,
+   "bbox": [
+    119.9,
+    21.8,
+    122.1,
+    25.4
+   ],
+   "source": "https://www.geoboundaries.org/api/current/gbOpen/TWN/ADM1/",
+   "license": "Open Data Commons Open Database License 1.0"
+  },
+  {
    "adcode": 810000,
    "name": "香港特别行政区",
    "level": "district",
