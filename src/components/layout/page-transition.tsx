@@ -8,7 +8,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   return (
-    <main className="flex-1" key={pathname} data-page-transition>
+    <main className="min-w-0 flex-1" key={pathname} data-page-transition>
       {children}
     </main>
   )

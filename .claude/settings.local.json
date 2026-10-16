@@ -28,7 +28,20 @@
       "Bash(curl *)",
       "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless=new --disable-gpu --hide-scrollbars --window-size=1440,900 --screenshot=\"D:\\\\ice_personal_site\\\\.shots\\\\projects-dark.png\" --virtual-time-budget=5000 \"http://localhost:3000/projects\")",
       "Bash(echo \"EXIT=$?\")",
-      "Bash(grep -o '<nav class=\"glass[^>]*>.\\\\{0,700\\\\}' /tmp/h3.html)"
+      "Bash(grep -o '<nav class=\"glass[^>]*>.\\\\{0,700\\\\}' /tmp/h3.html)",
+      "Bash(mkdir -p /d/_pwcheck)",
+      "Read(//d//**)",
+      "Bash(npm init *)",
+      "Bash(npm i *)",
+      "Bash(npx playwright *)",
+      "Bash(powershell -NoProfile -Command \"Get-Process -Id 7736 -ErrorAction SilentlyContinue | Select-Object Id,ProcessName,StartTime | Format-List\")",
+      "Bash(netstat -ano)",
+      "Bash(powershell -NoProfile -Command \"Get-Process -Id 7736 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id\")",
+      "Bash(echo \"tsc=$?\")",
+      "Bash(npx eslint *)",
+      "Bash(echo \"eslint=$?\")",
+      "Bash(awk 'NR>=4400 && NR<=4470' node_modules/echarts/types/dist/shared.d.ts)",
+      "Bash(awk 'NR<=4462' node_modules/echarts/types/dist/shared.d.ts)"
     ]
   }
 }

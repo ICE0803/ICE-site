@@ -22,6 +22,19 @@
   --glass-border: rgba(150, 205, 240, 0.16);
   --glass-highlight: rgba(214, 240, 255, 0.18);
   --glass-shadow: 0 1px 2px rgba(2, 8, 18, 0.35), 0 8px 24px rgba(2, 8, 18, 0.22);
+
+  /* 旅行地图配色：只被地图模块消费，不参与全站语义色。
+     深色为深海蓝底 + 冰蓝高亮。 */
+  --map-surface: rgba(12, 24, 42, 0.55);
+  --map-tile: rgba(24, 40, 64, 0.72);
+  --map-tile-visited: rgba(52, 122, 172, 0.72);
+  --map-visited-strong: #a5dcfb;
+  --map-border: rgba(150, 205, 240, 0.22);
+  --map-hover: #cfeaff;
+  --map-selected: #ffffff;
+  --map-glow: rgba(111, 195, 240, 0.35);
+  --travel-cover-bg: rgba(118, 176, 220, 0.08);
+  --travel-cover-mark: rgba(165, 220, 251, 0.55);
 }
 
 [data-theme="light"] {
@@ -41,6 +54,18 @@
   --glass-border: rgba(24, 92, 132, 0.13);
   --glass-highlight: rgba(255, 255, 255, 0.85);
   --glass-shadow: 0 1px 2px rgba(23, 62, 92, 0.06), 0 8px 24px rgba(23, 62, 92, 0.08);
+
+  /* 旅行地图配色：浅色为浅灰蓝底 + 清晰的蓝，靠描边与柔和阴影体现悬停。 */
+  --map-surface: rgba(232, 241, 248, 0.6);
+  --map-tile: #dbe7f1;
+  --map-tile-visited: #a8d5ef;
+  --map-visited-strong: #166a9c;
+  --map-border: rgba(24, 92, 132, 0.28);
+  --map-hover: #0b5d8c;
+  --map-selected: #082f4a;
+  --map-glow: rgba(47, 141, 196, 0.22);
+  --travel-cover-bg: rgba(218, 232, 242, 0.72);
+  --travel-cover-mark: rgba(22, 106, 156, 0.45);
 }
 
 @theme inline {
@@ -273,6 +298,19 @@ html[data-motion="on"] [data-page-transition] {
     opacity: 1;
     transform: none;
   }
+}
+
+/* 旅行档案封面：固定比例容器即使没有图片也保持稳定布局。 */
+.travel-cover {
+  background: var(--travel-cover-bg);
+}
+
+.travel-cover-mark {
+  border-color: var(--travel-cover-mark);
+  background:
+    linear-gradient(135deg, transparent 48%, var(--travel-cover-mark) 49%, transparent 52%),
+    linear-gradient(45deg, transparent 48%, var(--travel-cover-mark) 49%, transparent 52%);
+  opacity: 0.8;
 }
 
 /* 正文排版接主题 token：浅色在前、深色在后，

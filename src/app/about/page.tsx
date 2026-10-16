@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 
 import { siteConfig } from "@/data/site-config"
 import { SocialIcon } from "@/components/ui/social-icon"
+import { TravelSection } from "@/components/travel/travel-section"
 
 export const metadata: Metadata = {
   title: "关于",
@@ -11,15 +12,15 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="container-page py-14 sm:py-16">
-      <h1 className="text-3xl font-bold tracking-tight">关于</h1>
+    <div className="container-page py-10 sm:py-12">
+      <p className="text-[1.875rem] font-semibold leading-tight tracking-tight sm:text-[2.125rem]">
+        Dream, Hope, Roam.
+      </p>
+      <p className="mt-4 text-[1.375rem] leading-snug text-muted-foreground sm:text-[1.5rem]">
+        逐梦，怀望，然后远行
+      </p>
 
-      <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-        {siteConfig.hero.subtitle}
-      </p>
-      <p className="mt-4 leading-relaxed text-muted-foreground">
-        {siteConfig.description}
-      </p>
+      <TravelSection />
 
       <section data-reveal className="mt-12">
         <h2 className="text-lg font-semibold tracking-tight">当前关注</h2>
