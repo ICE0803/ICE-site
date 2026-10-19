@@ -642,7 +642,10 @@ function TravelCover({ name, src }: { name: string; src?: string }) {
   const [showImage, setShowImage] = useState(Boolean(src))
 
   return (
-    <div className="travel-cover mt-4 flex min-h-40 max-h-[20rem] items-center justify-center overflow-hidden rounded-lg border border-border/60 px-2">
+    <div
+      data-has-image={showImage && Boolean(src)}
+      className={`mt-4 flex min-h-40 max-h-[20rem] items-center justify-center${showImage && src ? "" : " travel-cover overflow-hidden rounded-lg border border-border/60 px-2"}`}
+    >
       {showImage && src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -652,8 +655,7 @@ function TravelCover({ name, src }: { name: string; src?: string }) {
           onError={() => setShowImage(false)}
         />
       ) : (
-        <div className="flex h-full min-h-40 w-full flex-col items-center justify-center gap-2 px-4 text-center text-muted-foreground">
-          <span aria-hidden className="travel-cover-mark h-8 w-12 rounded-md border" />
+        <div className="flex h-full min-h-40 w-full items-center justify-center px-4 text-center text-muted-foreground">
           <span className="text-xs">{travelLabels.coverPlaceholder}</span>
         </div>
       )}

@@ -300,6 +300,147 @@ html[data-motion="on"] [data-page-transition] {
   }
 }
 
+.interest-tab {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+  transition: color 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.interest-tab:hover {
+  color: var(--foreground);
+  background: var(--glass-bg);
+}
+
+.interest-tab[aria-selected="true"] {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: var(--glass-bg-strong);
+}
+
+.interest-row {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+
+.interest-title {
+  display: inline;
+  border-radius: 2px;
+  font-size: clamp(1rem, 1.4vw, 1.125rem);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  text-underline-offset: 5px;
+  transition: color 180ms ease, text-decoration-color 180ms ease;
+}
+
+.interest-title:hover,
+.interest-title:focus-visible {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
+
+.interest-creator {
+  color: var(--muted-foreground);
+  font-size: 0.84em;
+  text-decoration: none;
+}
+
+.interest-title:hover .interest-creator,
+.interest-title:focus-visible .interest-creator {
+  color: color-mix(in srgb, var(--accent) 72%, var(--muted-foreground));
+}
+
+.interest-external-link {
+  opacity: 0;
+  color: var(--muted-foreground);
+  transition: opacity 180ms ease, color 180ms ease;
+}
+
+.interest-title:hover .interest-external-link,
+.interest-title:focus-visible .interest-external-link {
+  opacity: 0.75;
+}
+
+button.interest-title {
+  text-decoration: none;
+}
+
+.interest-preview {
+  position: fixed;
+  z-index: 70;
+  width: min(29rem, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  background: color-mix(in srgb, var(--background) 88%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(5px);
+  transition: opacity 180ms ease, transform 180ms ease, visibility 180ms;
+  overflow-wrap: anywhere;
+}
+
+.interest-preview[data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.artist-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: 1.75rem 1.5rem;
+  width: 100%;
+}
+
+.artist-card {
+  min-width: 0;
+}
+
+.artist-portrait {
+  transition: transform 180ms ease;
+}
+
+.artist-card:hover .artist-portrait,
+.artist-card:focus-visible .artist-portrait,
+.artist-card[aria-expanded="true"] .artist-portrait {
+  transform: translateY(-2px);
+}
+
+.artist-preview {
+  width: min(25rem, calc(100vw - 24px));
+}
+
+@media (max-width: 639px) {
+  .artist-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .artist-portrait { transform: none !important; }
+}
+
+.interest-cover {
+  background: linear-gradient(140deg, var(--glass-bg-strong), color-mix(in srgb, var(--accent) 15%, var(--muted)));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .interest-info { opacity: 0.5; }
+  .interest-info:hover, .interest-info:focus-visible { opacity: 1; }
+}
+
+html[data-motion="on"] .interest-list {
+  animation: ice-fade-up 240ms ease both;
+  --rise: 5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-motion="on"] .interest-list { animation: none; }
+  .interest-preview { transform: none; }
+}
+
 /* 旅行档案封面：固定比例容器即使没有图片也保持稳定布局。 */
 .travel-cover {
   background: var(--travel-cover-bg);

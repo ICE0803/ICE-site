@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { siteConfig } from "@/data/site-config"
 import { SocialIcon } from "@/components/ui/social-icon"
 import { TravelSection } from "@/components/travel/travel-section"
+import { InterestArchive } from "@/components/interests/interest-archive"
 
 export const metadata: Metadata = {
   title: "关于",
@@ -21,20 +22,7 @@ export default function AboutPage() {
       </p>
 
       <TravelSection />
-
-      <section data-reveal className="mt-12">
-        <h2 className="text-lg font-semibold tracking-tight">当前关注</h2>
-        <dl className="mt-4 grid gap-4 sm:grid-cols-3">
-          {siteConfig.currently.map((item) => (
-            <div key={item.label} className="glass rounded-xl p-5">
-              <dt className="font-medium">{item.label}</dt>
-              <dd className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                {item.detail}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      <InterestArchive />
 
       <section data-reveal className="mt-12">
         <h2 className="text-lg font-semibold tracking-tight">联系</h2>

@@ -45,7 +45,19 @@
       "Bash(python *)",
       "Bash(python -c ' *)",
       "Bash(python3 -c \"print\\('python failed'\\)\")",
-      "Bash(command -v apply_patch)"
+      "Bash(command -v apply_patch)",
+      "Bash(npx *)",
+      "Bash(git -c core.quotepath=false ls-files public/images/travel)",
+      "Bash(git config *)",
+      "Bash(powershell.exe *)",
+      "Bash(MSYS_NO_PATHCONV=1 taskkill.exe *)",
+      "Bash(cmd.exe *)",
+      "WebFetch(domain:music.163.com)",
+      "Bash(pwd -W)",
+      "Bash(cygpath -w /tmp)",
+      "Bash(/d/Anaconda3/python.exe -c ' *)",
+      "Bash(PYTHONIOENCODING=utf-8 /d/Anaconda3/python.exe *)",
+      "WebFetch(domain:www.jvrmusic.com)"
     ]
   }
 }
