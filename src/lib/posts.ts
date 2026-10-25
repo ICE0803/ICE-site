@@ -27,6 +27,7 @@ const postSchema = z.object({
   category: z
     .string({ error: "category 为必填字段" })
     .min(1, "category 不能为空"),
+  contentType: z.enum(["blog", "note"]).default("blog"),
   published: z.boolean().default(false),
   featured: z.boolean().optional(),
 })
@@ -55,6 +56,7 @@ function parsePostFile(file: string): PostFile {
       date: parsed.date,
       updatedAt: parsed.updatedAt,
       category: parsed.category,
+      contentType: parsed.contentType,
       published: parsed.published,
       featured: parsed.featured,
       readingTime: readingTime(content),

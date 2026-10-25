@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
-import { getPublishedPosts } from "@/lib/posts"
+import { getPublishedPosts } from "@/lib/content"
 import { SearchPage } from "@/components/search/search-page"
+
+export const dynamic = "force-dynamic"
 
 export const metadata: Metadata = {
   title: "搜索",
@@ -10,8 +12,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-export default function SearchPageRoute() {
-  const posts = getPublishedPosts()
+export default async function SearchPageRoute() {
+  const posts = await getPublishedPosts()
 
   return (
     <div className="container-page py-14 sm:py-16">

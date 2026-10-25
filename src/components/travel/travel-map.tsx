@@ -17,6 +17,22 @@ import { buildInsetOption, buildMapSeries, mapNameFor } from "./map-regions"
 
 registerEchartsModules([MapChart, GeoComponent, TooltipComponent, CanvasRenderer])
 
+/**
+ * 只在容器确实有尺寸、实例还活着时重绘。
+ *
+ * 容器被隐藏或正在折叠时（切层级、父级 display:none、布局过渡中），
+ * ResizeObserver 会把 0 尺寸也报上来。此时照常 resize，echarts 就会用 0 尺寸
+ * 重算地图坐标系：viewRect 宽或高为 0 → 变换矩阵退化 → `matrixInvert` 返回 null
+ * （zrender/lib/core/matrix.js）→ `legacyCopyOverallTrans` 再把它写回元素
+ * （echarts/lib/coord/View.js）→ 读 `null[0]` 抛 TypeError。
+ * 跳过这次通知即可，尺寸恢复后浏览器会再送一次。
+ */
+function resizeChart(container: HTMLElement | null, chart: EChartsType | null) {
+  if (!container || !chart || chart.isDisposed()) return
+  if (container.clientWidth === 0 || container.clientHeight === 0) return
+  chart.resize()
+}
+
 /** 与 GeoJSON 对齐的最小结构，够 echarts 画图与这里取数即可。 */
 interface RegionFeature {
   properties: {
@@ -141,8 +157,9 @@ export function TravelMap({
     })
 
     // 容器尺寸变化（窗口缩放、字体加载完成）后重绘，避免边界被拉伸。
+    // 零尺寸的通知交给 resizeChart 过滤，否则 echarts 会在退化矩阵上求逆。
     const observer = new ResizeObserver(() => {
-      if (!chart.isDisposed()) chart.resize()
+      resizeChart(containerRef.current, chartRef.current)
     })
     observer.observe(el)
 
@@ -205,7 +222,7 @@ export function TravelMap({
   }, [seriesOption, scope, collection, colors])
 
   useEffect(() => {
-    chartRef.current?.resize()
+    resizeChart(containerRef.current, chartRef.current)
   }, [relayoutKey])
 
   return <div ref={containerRef} className="h-full w-full" />

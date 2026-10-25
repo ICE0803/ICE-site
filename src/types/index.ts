@@ -4,6 +4,8 @@ export type TocItem = {
   href: string
 }
 
+export type ContentType = "blog" | "note"
+
 export type Post = {
   slug: string
   title: string
@@ -11,12 +13,13 @@ export type Post = {
   date: string
   updatedAt?: string
   category: string
+  contentType: ContentType
   published: boolean
   featured?: boolean
   readingTime?: number
 }
 
-export type ProjectStatus = "active" | "in-progress" | "archived"
+export type ProjectStatus = "active" | "in-progress"
 
 export type Project = {
   slug: string

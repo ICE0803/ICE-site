@@ -1,13 +1,21 @@
+"use client"
+
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 import { siteConfig } from "@/data/site-config"
 import { SocialIcon } from "@/components/ui/social-icon"
+import { cn } from "@/lib/utils"
 
 const currentYear = new Date().getFullYear()
 
-export function Footer() {
+export function Footer({ blog = false }: { blog?: boolean }) {
+  const pathname = usePathname()
+  const isBlog = pathname === "/blog" || pathname.startsWith("/blog/")
+  if (blog !== isBlog) return null
+
   return (
-    <footer className="border-t border-border">
+    <footer className={cn("border-t border-border", blog && "min-w-0")}>
       <div className="container-page flex flex-col gap-4 py-8 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           {siteConfig.socials.map((social) => {

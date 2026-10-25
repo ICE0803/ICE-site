@@ -1,11 +1,11 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
-import { getLatestPosts } from "@/lib/posts"
+import { getLatestPosts } from "@/lib/content"
 import { formatDate } from "@/lib/utils"
 
-export function LatestPosts() {
-  const posts = getLatestPosts(3)
+export async function LatestPosts() {
+  const posts = await getLatestPosts(3)
 
   return (
     <section className="container-page py-16 sm:py-20">

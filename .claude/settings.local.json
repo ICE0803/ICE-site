@@ -57,7 +57,20 @@
       "Bash(cygpath -w /tmp)",
       "Bash(/d/Anaconda3/python.exe -c ' *)",
       "Bash(PYTHONIOENCODING=utf-8 /d/Anaconda3/python.exe *)",
-      "WebFetch(domain:www.jvrmusic.com)"
+      "WebFetch(domain:www.jvrmusic.com)",
+      "Bash(git -C \"D:/ice_personal_site\" status --short)",
+      "Bash(git -C \"D:/ice_personal_site\" log --oneline -5)",
+      "Bash(npm ls *)",
+      "Read(//c/Users/电脑/.claude/plugins/cache/claude-plugins-official/figma/2.2.127/**)",
+      "Bash(echo \"=== tsc exit: $? ===\")",
+      "Bash(echo \"=== lint exit: $? ===\")",
+      "Bash(git -C \"D:/ice_personal_site\" log --oneline -15)",
+      "Bash(git diff *)",
+      "Bash(git check-ignore *)",
+      "Bash(npm exec *)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh repo *)",
+      "Bash(gh api *)"
     ]
   }
 }

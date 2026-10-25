@@ -1,17 +1,19 @@
 import type { MetadataRoute } from "next"
 
 import { siteConfig } from "@/data/site-config"
-import { getPublishedPosts } from "@/lib/posts"
+import { getPublishedPosts } from "@/lib/content"
 import { projects } from "@/data/projects"
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const dynamic = "force-dynamic"
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.url.replace(/\/$/, "")
 
   const staticPages = ["", "/blog", "/projects", "/about"].map(
     (path) => ({ url: `${baseUrl}${path}` }),
   )
 
-  const posts = getPublishedPosts().map((post) => ({
+  const posts = (await getPublishedPosts()).map((post) => ({
     url: `${baseUrl}/blog/${post.slug}`,
     lastModified: post.updatedAt ?? post.date,
   }))

@@ -181,8 +181,27 @@ body::before {
     0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
+/* 博客固定侧栏：目录溢出时内部独立滚动，滚动条低调融入玻璃面。 */
+.blog-nav-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-border) transparent;
+}
+
+.blog-nav-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.blog-nav-scroll::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: 9999px;
+}
+
+.blog-nav-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 /* 文章内标题锚点定位时避开吸顶导航 */
-.prose :where(h2, h3, h4) {
+.prose :where(h1, h2, h3, h4) {
   scroll-margin-top: 5rem;
 }
 
@@ -272,15 +291,14 @@ html[data-motion="on"] [data-reveal="in"] {
 }
 
 /* 页面切换：路由变化时 main 重新挂载，淡入一次。
-   只做透明度，避免与滚动渐入的位移叠加成双重动效。 */
+   只做透明度——一旦在 main 上出现 transform，它会成为 position: fixed
+   后代的包含块，导致博客侧栏相对 main 而非视口定位、随页面滚动。 */
 @keyframes ice-page-in {
   from {
     opacity: 0;
-    transform: translate3d(0, 8px, 0);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 

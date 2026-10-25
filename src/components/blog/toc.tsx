@@ -6,7 +6,7 @@ import type { TocItem } from "@/types"
 import { cn } from "@/lib/utils"
 
 export function Toc({ items }: { items: TocItem[] }) {
-  const [activeId, setActiveId] = useState("")
+  const [activeId, setActiveId] = useState(items[0]?.href.slice(1) ?? "")
 
   useEffect(() => {
     const headings = items
@@ -15,19 +15,17 @@ export function Toc({ items }: { items: TocItem[] }) {
 
     if (headings.length === 0) return
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id)
-          }
-        }
-      },
-      { rootMargin: "-80px 0px -66% 0px" },
-    )
+    const updateActive = () => {
+      const readingLine = window.scrollY + 120
+      const current = headings.findLast(
+        (heading) => heading.getBoundingClientRect().top + window.scrollY <= readingLine,
+      )
+      setActiveId(current?.id ?? headings[0].id)
+    }
 
-    headings.forEach((heading) => observer.observe(heading))
-    return () => observer.disconnect()
+    updateActive()
+    window.addEventListener("scroll", updateActive, { passive: true })
+    return () => window.removeEventListener("scroll", updateActive)
   }, [items])
 
   if (items.length === 0) return null
@@ -42,10 +40,22 @@ export function Toc({ items }: { items: TocItem[] }) {
             <li key={item.href}>
               <a
                 href={item.href}
+                onClick={(event) => {
+                  const target = document.getElementById(item.href.slice(1))
+                  if (!target) return
+                  event.preventDefault()
+                  target.scrollIntoView({
+                    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                      ? "instant"
+                      : "smooth",
+                    block: "start",
+                  })
+                  window.history.replaceState(null, "", item.href)
+                  setActiveId(target.id)
+                }}
                 className={cn(
                   "block border-l-2 py-1 pl-4 leading-snug transition-colors",
-                  item.depth === 3 && "pl-7",
-                  item.depth >= 4 && "pl-10",
+                  item.depth === 2 && "pl-7",
                   active
                     ? "border-accent text-accent"
                     : "border-border text-muted-foreground hover:text-foreground",

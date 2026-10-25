@@ -12,7 +12,6 @@ const filters: { value: Filter; label: string }[] = [
   { value: "all", label: "全部" },
   { value: "active", label: "已上线" },
   { value: "in-progress", label: "进行中" },
-  { value: "archived", label: "已归档" },
 ]
 
 export function ProjectList({ projects }: { projects: Project[] }) {

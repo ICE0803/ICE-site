@@ -43,10 +43,10 @@ export function Header() {
     <header
       data-enter
       style={{ "--rise": "0px", "--dur": "500ms" } as React.CSSProperties}
-      className="sticky top-0 z-50"
+      className="pointer-events-none sticky top-0 z-50"
     >
-      <div className="container-page flex justify-center py-4">
-        <nav className="glass flex h-14 max-w-full items-center gap-1 rounded-full px-2 backdrop-blur-xl backdrop-saturate-150">
+      <div className="container-page pointer-events-none flex justify-center py-4">
+        <nav className="glass pointer-events-auto flex h-14 max-w-full items-center gap-1 rounded-full px-2 backdrop-blur-xl backdrop-saturate-150">
           {brand}
 
           <div className="hidden items-center gap-1 md:flex">

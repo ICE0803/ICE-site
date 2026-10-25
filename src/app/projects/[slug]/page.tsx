@@ -97,7 +97,7 @@ export default async function ProjectPage({
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-muted"
                 >
                   <GithubIcon className="h-4 w-4" />
-                  源码
+                  {project.github}
                 </a>
               )}
               {project.demo && (

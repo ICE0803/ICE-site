@@ -1,5 +1,5 @@
 import { siteConfig } from "@/data/site-config"
-import { getPublishedPosts } from "@/lib/posts"
+import { getPublishedPosts } from "@/lib/content"
 
 function escapeXml(value: string): string {
   return value
@@ -12,7 +12,7 @@ function escapeXml(value: string): string {
 
 export async function GET() {
   const baseUrl = siteConfig.url.replace(/\/$/, "")
-  const posts = getPublishedPosts()
+  const posts = await getPublishedPosts()
 
   const items = posts
     .map((post) => {

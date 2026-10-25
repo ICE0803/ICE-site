@@ -5,6 +5,8 @@ import { FeaturedProjects } from "@/components/home/FeaturedProjects"
 import { LatestPosts } from "@/components/home/LatestPosts"
 import { Currently } from "@/components/home/Currently"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 }
