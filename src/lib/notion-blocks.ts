@@ -5,6 +5,7 @@ type RichText = {
 }
 
 type Block = {
+  id?: string
   type: string
   children?: Block[]
   [key: string]: unknown
@@ -50,8 +51,27 @@ function richText(block: Block): RichText[] {
 }
 
 function imageUrl(block: Block): string | undefined {
-  const image = block.image as { type?: string; external?: { url?: string } } | undefined
-  return image?.type === "external" ? safeUrl(image.external?.url) : undefined
+  const image = block.image as {
+    type?: string
+    external?: { url?: string }
+    file?: { url?: string }
+  } | undefined
+  if (!image || typeof image !== "object") return undefined
+
+  if (image.type === "external") return safeUrl(image.external?.url)
+  if (image.type === "file") {
+    const id = block.id ?? ""
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+      ? `/api/notion/images/${id}`
+      : undefined
+  }
+  return undefined
+}
+
+function imageAlt(block: Block): string {
+  const image = block.image as { caption?: RichText[] } | undefined
+  const raw = text(image?.caption ?? [])
+  return raw.replace(/\\([{}<>\[\]*_!~|])/g, "$1").replace(/`/g, "")
 }
 
 function render(blocks: Block[], depth = 0): string {
@@ -99,8 +119,11 @@ function render(blocks: Block[], depth = 0): string {
         break
       }
       case "image": {
-        const url = imageUrl(block)
-        if (url) result = `![](${url})`
+        const image = imageUrl(block)
+        if (image) {
+          const alt = imageAlt(block)
+          result = `![${alt}](${image})`
+        }
         break
       }
       case "divider": result = "---"; break

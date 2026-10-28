@@ -2,15 +2,29 @@ import { cache } from "react"
 
 import type { Post } from "@/types"
 import * as localPosts from "@/lib/posts"
-import { getNotionPost, getNotionPosts, hasNotionPost, isNotionConfigured } from "@/lib/notion"
+import { getNotionPost, getNotionPosts, hasNotionPost, isNotionConfigured, notionErrorDetails } from "@/lib/notion"
+
+function readLocalPosts<T>(operation: "list" | "detail", read: () => T): T {
+  try {
+    return read()
+  } catch (error) {
+    console.error("Local posts read failed", {
+      ...notionErrorDetails(error),
+      stage: "local-read",
+      operation,
+      stack: error instanceof Error ? error.stack?.split("\n").filter((line) => /^\s+at /.test(line)).slice(0, 8).join("\n") : undefined,
+    })
+    throw error
+  }
+}
 
 export const getAllPosts = cache(async (): Promise<Post[]> => {
-  if (!isNotionConfigured()) return localPosts.getAllPosts()
+  if (!isNotionConfigured()) return readLocalPosts("list", () => localPosts.getAllPosts())
   try {
     return await getNotionPosts()
   } catch (error) {
-    console.error("Notion content index unavailable; using local posts", error instanceof Error ? error.message : "unknown error")
-    return localPosts.getAllPosts()
+    console.error("Notion content index unavailable; using local posts", notionErrorDetails(error))
+    return readLocalPosts("list", () => localPosts.getAllPosts())
   }
 })
 
@@ -27,14 +41,14 @@ export const getPostBySlug = cache(async (slug: string) => {
     let exists: boolean
     try {
       exists = await hasNotionPost(slug)
-    } catch {
-      console.error("Notion content index unavailable; using local post")
-      const local = localPosts.getPostBySlug(slug)
+    } catch (error) {
+      console.error("Notion content index unavailable; using local post", notionErrorDetails(error))
+      const local = readLocalPosts("detail", () => localPosts.getPostBySlug(slug))
       return local?.post.published ? local : undefined
     }
     if (exists) return getNotionPost(slug)
   }
-  const local = localPosts.getPostBySlug(slug)
+  const local = readLocalPosts("detail", () => localPosts.getPostBySlug(slug))
   return local?.post.published ? local : undefined
 })
 

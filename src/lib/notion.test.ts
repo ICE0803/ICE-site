@@ -22,7 +22,7 @@ registerHooks({
 process.env.NOTION_TOKEN = "test-token"
 process.env.NOTION_DATABASE_ID = "00000000-0000-4000-8000-000000000000"
 
-const { indexNotionPages, parsePage, findPublishedNotionEntry, publishedNotionPosts } = await import("./notion.ts")
+const { indexNotionPages, parsePage, findPublishedNotionEntry, publishedNotionPosts, getNotionPost } = await import("./notion.ts")
 const { getAllPosts: localPosts } = await import("./posts.ts")
 const { getPublishedPosts, getPostBySlug } = await import("./content.ts")
 
@@ -46,6 +46,7 @@ function page(slug: string, status = "已发布", overrides: Record<string, unkn
 
 let mockPages: Page[] = []
 let mockBlocks: Record<string, unknown>[] = []
+let blockFailures = new Set<string>()
 const fetchCalls: { url: string; init?: RequestInit }[] = []
 
 globalThis.fetch = async (input, init) => {
@@ -55,7 +56,9 @@ globalThis.fetch = async (input, init) => {
     return Response.json({ results: mockPages, has_more: false })
   }
   if (url.includes("/blocks/") && url.includes("/children")) {
-    return Response.json({ results: mockBlocks, has_more: false })
+    const blockId = url.split("/blocks/")[1].split("/")[0]
+    if (blockFailures.has(blockId)) return new Response(null, { status: 503 })
+    return Response.json({ results: new Set(mockPages.map((page) => page.id)).has(blockId) ? mockBlocks : [], has_more: false })
   }
   throw new Error("Unexpected mocked Notion request")
 }
@@ -118,6 +121,26 @@ test("published pages appear in lists and are available by a new slug", async ()
   assert.equal(detail?.post.slug, "newly-published-slug")
   assert.equal(detail?.content, "## 正文标题\n\n正文段落")
   assert.equal(fetchCalls.some(({ url, init }) => url.includes("/blocks/") && url.includes("/children") && init?.next?.revalidate === 300 && init.next.tags?.includes("posts")), true)
+})
+
+test("published posts with no blocks have valid empty content", async () => {
+  mockPages = [page("empty-content")]
+  mockBlocks = []
+  blockFailures.clear()
+  const result = await getNotionPost("empty-content")
+  assert.equal(result?.content, "")
+})
+
+test("block content failures propagate instead of becoming empty posts", async () => {
+  mockPages = [page("unavailable-content", "已发布", {}, "00000000-0000-4000-8000-000000000003")]
+  blockFailures = new Set(["00000000-0000-4000-8000-000000000003"])
+  await assert.rejects(getNotionPost("unavailable-content"), /Notion API returned 503/)
+
+  mockPages = [page("nested-unavailable-content", "已发布", {}, "00000000-0000-4000-8000-000000000004")]
+  mockBlocks = [{ id: "00000000-0000-4000-8000-000000000012", type: "paragraph", has_children: true }]
+  blockFailures = new Set(["00000000-0000-4000-8000-000000000012"])
+  await assert.rejects(getNotionPost("nested-unavailable-content"), /Notion API returned 503/)
+  blockFailures.clear()
 })
 
 test("missing fields and invalid slugs are isolated", () => {

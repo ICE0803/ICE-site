@@ -28,6 +28,47 @@ type NotionBlock = Record<string, unknown> & { id: string; type: string; has_chi
 type ContentPost = Post & { pageId: string; tags?: string[]; cover?: string }
 type PostContent = { post: Omit<ContentPost, "pageId">; content: string }
 type IndexEntry = { pageId: string; slug: string; post?: ContentPost }
+type NotionStage = "database-query" | "block-children" | "image-block" | "unknown"
+
+class NotionRequestError extends Error {
+  constructor(
+    readonly stage: NotionStage,
+    readonly status: number | undefined,
+    readonly failureType: string,
+    readonly reason: string,
+    options?: ErrorOptions,
+  ) {
+    super(reason, options)
+    this.name = failureType
+  }
+}
+
+function notionStage(path: string): NotionStage {
+  if (path.includes("/databases/") && path.endsWith("/query")) return "database-query"
+  if (path.includes("/children")) return "block-children"
+  if (path.startsWith("/blocks/")) return "image-block"
+  return "unknown"
+}
+
+function safeErrorMessage(message: string): string {
+  return message
+    .replace(/https?:\/\/[^\s"'<>]+/gi, "[URL redacted]")
+    .replace(/\bBearer\s+\S+/gi, "Bearer [redacted]")
+    .replace(/((?:token|secret|authorization)\s*[:=]\s*)\S+/gi, "$1[redacted]")
+    .slice(0, 200)
+}
+
+export function notionErrorDetails(error: unknown) {
+  if (error instanceof NotionRequestError) {
+    return { stage: error.stage, status: error.status, type: error.failureType, reason: error.reason }
+  }
+  return {
+    stage: "unknown" as const,
+    status: undefined,
+    type: error instanceof Error ? error.name : typeof error,
+    reason: error instanceof Error ? safeErrorMessage(error.message) : "unknown error",
+  }
+}
 
 const notionEnabled = Boolean(process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID)
 
@@ -115,6 +156,7 @@ async function notionFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
   let lastError: unknown
   for (let attempt = 0; attempt < 3; attempt += 1) {
+    let status: number | undefined
     try {
       const response = await fetch(`${notionApi}${path}`, {
         ...init,
@@ -125,21 +167,33 @@ async function notionFetch<T>(path: string, init?: RequestInit): Promise<T> {
           ...init?.headers,
         },
         signal: AbortSignal.timeout(10_000),
-        next: { revalidate: 300, tags: ["posts"] },
+        ...(init?.cache === "no-store" ? {} : { next: { revalidate: 300, tags: ["posts"] } }),
       })
-      if (response.ok) return (await response.json()) as T
-      if (response.status !== 429 && response.status < 500) {
-        throw new Error(`Notion API returned ${response.status}`)
+      status = response.status
+      if (response.ok) {
+        try {
+          return (await response.json()) as T
+        } catch (error) {
+          throw new NotionRequestError(notionStage(path), status, "NotionResponseError", "Invalid JSON response", { cause: error })
+        }
       }
-      lastError = new Error(`Notion API returned ${response.status}`)
+      const failureType = response.status === 429 || response.status >= 500 ? "NotionServiceError" : "NotionRequestError"
+      const failure = new NotionRequestError(
+        notionStage(path), status, failureType,
+        response.status === 429 ? "Rate limited" : `Notion API returned ${response.status}`,
+      )
+      if (response.status !== 429 && response.status < 500) throw failure
+      lastError = failure
     } catch (error) {
-      if (error instanceof Error && /^Notion API returned 4\d\d$/.test(error.message) &&
-        error.message !== "Notion API returned 429") throw error
-      lastError = error
+      if (error instanceof NotionRequestError && error.failureType === "NotionRequestError" && error.status !== 429 && (error.status ?? 0) < 500) throw error
+      lastError = error instanceof NotionRequestError
+        ? error
+        : new NotionRequestError(notionStage(path), status, error instanceof Error ? error.name : "UnknownError", error instanceof Error ? safeErrorMessage(error.message) : "unknown error", { cause: error })
     }
     if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 250 * 2 ** attempt))
   }
-  throw lastError instanceof Error ? lastError : new Error("Notion API request failed")
+  if (lastError instanceof NotionRequestError) throw lastError
+  throw new NotionRequestError(notionStage(path), undefined, "NotionRequestError", "Notion API request failed", { cause: lastError })
 }
 
 async function paginated<T extends Record<string, unknown>>(
@@ -228,11 +282,26 @@ export function findPublishedNotionEntry(entries: IndexEntry[], slug: string): C
   return matches[0].post?.published ? matches[0].post : undefined
 }
 
+export async function getNotionImageBlock(blockId: string): Promise<NotionBlock | undefined> {
+  if (!notionEnabled) return undefined
+  try {
+    return await notionFetch<NotionBlock>(`/blocks/${blockId}`, { cache: "no-store" })
+  } catch (error) {
+    if (error instanceof Error && error.message === "Notion API returned 404") return undefined
+    throw error
+  }
+}
+
+export async function downloadNotionImage(url: string): Promise<Response> {
+  return fetch(url, { redirect: "error", signal: AbortSignal.timeout(10_000), cache: "no-store" })
+}
+
 export async function getNotionPost(slug: string): Promise<PostContent | undefined> {
   const post = findPublishedNotionEntry(await getNotionIndex(), slug)
   if (!post) return undefined
   const blocks = await getBlockChildren(post.pageId)
-  const content = notionBlocksToMarkdown(await expandBlocks(blocks))
+  const expandedBlocks = await expandBlocks(blocks)
+  const content = notionBlocksToMarkdown(expandedBlocks)
   const { pageId, ...publicPost } = post
   void pageId
   return { post: { ...publicPost, readingTime: readingTime(content) }, content }

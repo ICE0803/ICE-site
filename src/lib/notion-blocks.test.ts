@@ -13,7 +13,7 @@ test("renders grouped and nested lists", () => {
   assert.equal(markdown, "1. first\n  - child\n2. second")
 })
 
-test("renders tables, code, equations and only stable images", () => {
+test("renders tables, code, equations and both Notion image types", () => {
   const markdown = notionBlocksToMarkdown([
     { type: "table", children: [
       { type: "table_row", table_row: { cells: [[{ plain_text: "Name" }], [{ plain_text: "Value" }]] } },
@@ -21,14 +21,24 @@ test("renders tables, code, equations and only stable images", () => {
     ] },
     { type: "code", code: { language: "js", rich_text: [{ plain_text: "const x = 1" }] } },
     { type: "equation", equation: { expression: "E=mc^2" } },
-    { type: "image", image: { type: "file", file: { url: "https://expired.example/image" } } },
+    { id: "00000000-0000-4000-8000-000000000010", type: "image", image: { type: "file", file: { url: "https://files.example/image.png" }, caption: [{ plain_text: "File image" }] } },
     { type: "image", image: { type: "external", external: { url: "https://example.com/image.png" } } },
   ])
   assert.match(markdown, /\| Name \| Value \|\n\| --- \| --- \|\n\| A \| B \|/)
   assert.match(markdown, /```js\nconst x = 1\n```/)
   assert.match(markdown, /\$\$\nE=mc\^2\n\$\$/)
-  assert.doesNotMatch(markdown, /expired/)
+  assert.match(markdown, /!\[File image\]\(\/api\/notion\/images\/00000000-0000-4000-8000-000000000010\)/)
   assert.match(markdown, /!\[\]\(https:\/\/example.com\/image.png\)/)
+})
+
+test("ignores image blocks without valid HTTP or HTTPS URLs", () => {
+  const markdown = notionBlocksToMarkdown([
+    { type: "image", image: { type: "file" } },
+    { type: "image", image: { type: "external", external: {} } },
+    { type: "image", image: { type: "external", external: { url: "javascript:alert(1)" } } },
+    { type: "image", image: { type: "external", external: { url: "not a URL" } } },
+  ])
+  assert.equal(markdown, "")
 })
 
 test("keeps literal Markdown markers out of Notion text", () => {

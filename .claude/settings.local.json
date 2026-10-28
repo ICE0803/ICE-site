@@ -70,7 +70,12 @@
       "Bash(npm exec *)",
       "WebFetch(domain:github.com)",
       "Bash(gh repo *)",
-      "Bash(gh api *)"
+      "Bash(gh api *)",
+      "Bash(command -v curl)",
+      "Bash(gh pr *)",
+      "Bash(git -C \"D:/ice_personal_site\" diff src/lib/notion-blocks.ts src/lib/notion-blocks.test.ts)",
+      "Bash(npm test *)",
+      "Bash(git -C .claude/worktrees/next-16-4-3-security status --porcelain=v1)"
     ]
   }
 }
