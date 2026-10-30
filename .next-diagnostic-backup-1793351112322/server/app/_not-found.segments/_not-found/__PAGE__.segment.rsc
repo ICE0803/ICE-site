@@ -1,0 +1,35 @@
+1:"$Sreact.fragment"
+2:"/_next/static/chunks/0umf92h1sb77c.js"
+3:"/_next/static/chunks/3mgs030o_-w4j.js"
+4:I[3374,["$2","$3"],"Header"]
+5:I[81204,["$2","$3"],"PageTransition"]
+6:I[39756,["$2","$3"],"default"]
+7:"/_next/static/chunks/0pt3blood-d89.js"
+8:I[58298,["$2","$3","$7"],"default"]
+9:I[37457,["$2","$3"],"default"]
+a:I[22016,["$2","$3"],""]
+b:I[58234,["$2","$3"],"Footer"]
+c:I[87645,["$2","$3"],"MotionProvider"]
+13:I[97367,["$2","$3"],"OutletBoundary"]
+14:"$Sreact.suspense"
+17:"ViewportBoundary"
+18:I[97367,["$2","$3"],"$17"]
+19:"MetadataBoundary"
+1a:I[97367,["$2","$3"],"$19"]
+1b:I[27201,["$2","$3"],"IconMark"]
+:HL["/_next/static/chunks/20j3lftp93yi4.css","style"]
+e:X
+11:X
+11:C
+12:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[["$","div",null,{"className":"mx-auto flex max-w-5xl flex-col items-center px-4 py-24 text-center sm:px-6","children":[["$","p",null,{"className":"text-sm font-medium text-accent","children":"404"}],["$","h1",null,{"className":"mt-2 text-3xl font-bold tracking-tight","children":"页面未找到"}],["$","p",null,{"className":"mt-3 text-muted-foreground","children":"你访问的页面不存在，或已被移动。"}],["$","$La",null,{"href":"/","className":"mt-8 inline-flex h-10 items-center justify-center rounded-md bg-accent px-5 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent/80","children":"返回首页"}]]}],null,["$","$L13",null,{"children":["$","$14",null,{"name":"Next.MetadataOutlet","children":"$@15"}]}]]}],"p":"$@16","v":null,"s":"$e"}}]]
+f:[["children",{"s":"/_not-found","h":96,"d":{"r":["$","$1","c",{"children":[null,["$","$L6",null,{"parallelRouterKey":"children","template":["$","$L9",null,{}]}]]}],"p":"$@10","v":"$11","s":"$e"},"c":"$Q12"}]]
+0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/20j3lftp93yi4.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/0umf92h1sb77c.js","async":true}],["$","script","script-1",{"src":"/_next/static/chunks/3mgs030o_-w4j.js","async":true}]],["$","html",null,{"lang":"zh-CN","suppressHydrationWarning":true,"className":"LINzvG_variable VxV-Ta_variable h-full antialiased","children":[["$","head",null,{"children":[["$","script",null,{"dangerouslySetInnerHTML":{"__html":"(function () {\n  try {\n    var t = localStorage.getItem(\"theme\");\n    if (t !== \"light\" && t !== \"dark\") {\n      t = window.matchMedia(\"(prefers-color-scheme: light)\").matches ? \"light\" : \"dark\";\n    }\n    document.documentElement.setAttribute(\"data-theme\", t);\n  } catch (e) {\n    document.documentElement.setAttribute(\"data-theme\", \"dark\");\n  }\n})();"}}],["$","script",null,{"dangerouslySetInnerHTML":{"__html":"(function () {\n  try {\n    if (window.matchMedia(\"(prefers-reduced-motion: reduce)\").matches) return;\n    if (typeof IntersectionObserver !== \"function\") return;\n    document.documentElement.setAttribute(\"data-motion\", \"on\");\n  } catch (e) {}\n})();"}}]]}],["$","body",null,{"className":"flex min-h-full flex-col","children":[["$","$L4",null,{}],["$","$L5",null,{"children":["$","$L6",null,{"parallelRouterKey":"children","error":"$8","errorStyles":[],"errorScripts":[["$","script","script-0",{"src":"/_next/static/chunks/0pt3blood-d89.js","async":true}]],"template":["$","$L9",null,{}],"notFound":[["$","div",null,{"className":"mx-auto flex max-w-5xl flex-col items-center px-4 py-24 text-center sm:px-6","children":[["$","p",null,{"className":"text-sm font-medium text-accent","children":"404"}],["$","h1",null,{"className":"mt-2 text-3xl font-bold tracking-tight","children":"页面未找到"}],["$","p",null,{"className":"mt-3 text-muted-foreground","children":"你访问的页面不存在，或已被移动。"}],["$","$La",null,{"href":"/","className":"mt-8 inline-flex h-10 items-center justify-center rounded-md bg-accent px-5 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent/80","children":"返回首页"}]]}],[]]}]}],["$","$Lb",null,{}],["$","$Lc",null,{}]]}]]}]]}],"p":"$@d","v":null,"s":"$e"},"c":"$Qf"},"h":{"r":["$","$1","h",{"children":[["$","meta",null,{"name":"robots","content":"noindex"}],["$","$L18",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L1a",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$14",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"ICE"}],["$","meta","1",{"name":"description","content":"个人主页与技术博客，分享关于大模型、Agent、强化学习与后端开发的技术实践与思考。"}],["$","meta","2",{"property":"og:title","content":"ICE"}],["$","meta","3",{"property":"og:description","content":"个人主页与技术博客，分享关于大模型、Agent、强化学习与后端开发的技术实践与思考。"}],["$","meta","4",{"property":"og:url","content":"https://icedhr.vercel.app"}],["$","meta","5",{"property":"og:site_name","content":"ICE"}],["$","meta","6",{"property":"og:locale","content":"zh_CN"}],["$","meta","7",{"property":"og:type","content":"website"}],["$","meta","8",{"name":"twitter:card","content":"summary"}],["$","meta","9",{"name":"twitter:title","content":"ICE"}],["$","meta","10",{"name":"twitter:description","content":"个人主页与技术博客，分享关于大模型、Agent、强化学习与后端开发的技术实践与思考。"}],["$","link","11",{"rel":"icon","href":"/favicon.ico?favicon.1-30d2zx77x_t.ico","sizes":"64x64","type":"image/x-icon"}],["$","link","12",{"rel":"icon","href":"/icon.png?icon.2bk9m77svqgq3.png","sizes":"48x48","type":"image/png"}],["$","$L1b","13",{}]]}]}],null]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"p":"$@1c","v":null,"s":"$e"}},"a":"$@1d","u":"$@1e","b":"J1m4CXESpYAQ7TQpBnj2D"}
+15:null
+e:300
+1e:true
+e:C
+1d:0
+10:"$undefined"
+d:"$undefined"
+1c:"$undefined"
+16:"$undefined"

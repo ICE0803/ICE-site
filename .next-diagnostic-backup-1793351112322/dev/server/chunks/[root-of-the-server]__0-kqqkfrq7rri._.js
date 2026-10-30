@@ -1,0 +1,922 @@
+module.exports = [
+(()=>{"use strict";return[
+"[project]/src/app/api/notion/images/[id]/route.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "GET",
+    ()=>GET
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$notion$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/notion.ts [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$notion$2d$images$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/notion-images.ts [app-route] (ecmascript)");
+;
+;
+const imageTypes = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "image/avif"
+]);
+const maxImageBytes = 10 * 1024 * 1024;
+const blockIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const defaultAllowedHosts = [
+    "prod-files-secure.s3.us-west-2.amazonaws.com",
+    "prod-files-secure.s3.amazonaws.com"
+];
+function allowedHosts() {
+    const configured = process.env.NOTION_FILE_HOSTS?.split(",").map((host)=>host.trim().toLowerCase()).filter(Boolean);
+    return new Set(configured?.length ? configured : defaultAllowedHosts);
+}
+function validSource(value) {
+    try {
+        const url = new URL(value);
+        if (url.protocol !== "https:" || url.username || url.password || !allowedHosts().has(url.hostname.toLowerCase())) return undefined;
+        return url;
+    } catch  {
+        return undefined;
+    }
+}
+async function readLimitedBody(response) {
+    if (!response.body) return {
+        error: "read-failed"
+    };
+    const reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+        while(true){
+            const { done, value } = await reader.read();
+            if (done) break;
+            total += value.byteLength;
+            if (total > maxImageBytes) {
+                await reader.cancel();
+                return {
+                    error: "too-large"
+                };
+            }
+            chunks.push(value);
+        }
+    } catch  {
+        await reader.cancel().catch(()=>undefined);
+        return {
+            error: "read-failed"
+        };
+    } finally{
+        reader.releaseLock();
+    }
+    const body = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks){
+        body.set(chunk, offset);
+        offset += chunk.byteLength;
+    }
+    return {
+        body: body.buffer
+    };
+}
+function failure(status) {
+    return new Response(null, {
+        status,
+        headers: {
+            "Cache-Control": "no-store",
+            "X-Content-Type-Options": "nosniff"
+        }
+    });
+}
+async function GET(_request, { params }) {
+    const { id } = await params;
+    if (!blockIdPattern.test(id)) return failure(400);
+    try {
+        const block = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$notion$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getNotionImageBlock"])(id);
+        if (!block) return failure(404);
+        if (block.type !== "image") return failure(422);
+        const image = block.image;
+        if (image?.type !== "file") return failure(422);
+        const source = typeof image.file?.url === "string" ? validSource(image.file.url) : undefined;
+        if (!source) return failure(502);
+        const upstream = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$notion$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["downloadNotionImage"])(source.toString());
+        if (upstream.status >= 300 && upstream.status < 400) return failure(502);
+        if (!upstream.ok) return failure(502);
+        const contentType = upstream.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() ?? "";
+        if (!imageTypes.has(contentType)) return failure(415);
+        const lengthHeader = upstream.headers.get("content-length");
+        const declaredLength = lengthHeader === null ? undefined : Number(lengthHeader);
+        if (declaredLength !== undefined && Number.isFinite(declaredLength) && declaredLength > maxImageBytes) {
+            await upstream.body?.cancel();
+            return failure(413);
+        }
+        const { body, error } = await readLimitedBody(upstream);
+        if (error === "too-large") return failure(413);
+        if (error || !body) return failure(502);
+        const publicUrl = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$notion$2d$images$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["syncNotionImage"])({
+            body,
+            contentType,
+            blockId: id
+        });
+        return Response.redirect(publicUrl, 307);
+    } catch (error) {
+        if (error instanceof __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$notion$2d$images$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NotionImageConfigError"]) return failure(503);
+        if (error instanceof __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$notion$2d$images$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NotionImageUploadError"]) return failure(502);
+        const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
+        console.error("Notion image proxy failed", {
+            blockId: id,
+            reason: timedOut ? "timeout" : "upstream failure"
+        });
+        return failure(timedOut ? 504 : 502);
+    }
+}
+}),
+"[project]/src/lib/notion-blocks.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "notionBlocksToMarkdown",
+    ()=>notionBlocksToMarkdown
+]);
+function escapeText(value) {
+    return value.replace(/\\/g, "\\\\").replace(/([{}<>\[\]*_!~|])/g, "\\$1").replace(/(^|\n)([ \t]*)(#{1,6}(?=\s)|>|(?:[-+]|\d+\.)(?=\s))/g, (_match, start, spaces, marker)=>`${start}${spaces}\\${marker}`);
+}
+function safeUrl(value) {
+    if (!value) return undefined;
+    try {
+        const url = new URL(value);
+        return url.protocol === "https:" || url.protocol === "http:" ? url.toString().replace(/[()]/g, (char)=>char === "(" ? "%28" : "%29") : undefined;
+    } catch  {
+        return undefined;
+    }
+}
+function text(value = []) {
+    return value.map((item)=>{
+        const raw = item.plain_text ?? "";
+        let result = escapeText(raw).replace(/`/g, "\\`");
+        const annotations = item.annotations;
+        if (annotations?.code) {
+            const fence = "`".repeat(Math.max(1, ...(raw.match(/`+/g) ?? []).map((run)=>run.length + 1)));
+            result = `${fence}${raw.includes("`") ? ` ${raw} ` : raw}${fence}`;
+        } else {
+            if (annotations?.bold) result = `**${result}**`;
+            if (annotations?.italic) result = `*${result}*`;
+            if (annotations?.strikethrough) result = `~~${result}~~`;
+        }
+        const href = safeUrl(item.href);
+        return href ? `[${result}](${href})` : result;
+    }).join("");
+}
+function richText(block) {
+    return block[block.type]?.rich_text ?? [];
+}
+function imageUrl(block) {
+    const image = block.image;
+    if (!image || typeof image !== "object") return undefined;
+    if (image.type === "external") return safeUrl(image.external?.url);
+    if (image.type === "file") {
+        const id = block.id ?? "";
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ? `/api/notion/images/${id}` : undefined;
+    }
+    return undefined;
+}
+function imageAlt(block) {
+    const image = block.image;
+    const raw = text(image?.caption ?? []);
+    return raw.replace(/\\([{}<>\[\]*_!~|])/g, "$1").replace(/`/g, "");
+}
+function render(blocks, depth = 0) {
+    const fragments = [];
+    let list = [];
+    let listType = "";
+    const flush = ()=>{
+        if (list.length) fragments.push(list.join("\n"));
+        list = [];
+        listType = "";
+    };
+    for (const block of blocks){
+        const content = text(richText(block));
+        const indent = "  ".repeat(depth);
+        if ([
+            "bulleted_list_item",
+            "numbered_list_item",
+            "to_do"
+        ].includes(block.type)) {
+            if (listType && listType !== block.type) flush();
+            listType = block.type;
+            const checked = block.to_do?.checked;
+            const marker = block.type === "bulleted_list_item" ? "-" : block.type === "numbered_list_item" ? `${list.length + 1}.` : `- [${checked ? "x" : " "}]`;
+            const children = block.children?.length ? `\n${render(block.children, depth + 1).replace(/\n\n/g, "\n")}` : "";
+            list.push(`${indent}${marker} ${content}${children}`);
+            continue;
+        }
+        flush();
+        let result = "";
+        switch(block.type){
+            case "paragraph":
+                result = content;
+                break;
+            case "heading_1":
+                result = `# ${content}`;
+                break;
+            case "heading_2":
+                result = `## ${content}`;
+                break;
+            case "heading_3":
+                result = `### ${content}`;
+                break;
+            case "quote":
+            case "callout":
+                result = content.split("\n").map((line)=>`> ${line}`).join("\n");
+                break;
+            case "code":
+                {
+                    const value = block.code;
+                    const source = (value?.rich_text ?? []).map((part)=>part.plain_text ?? "").join("");
+                    const fence = "`".repeat(Math.max(3, ...(source.match(/`+/g) ?? []).map((run)=>run.length + 1)));
+                    const language = /^[a-zA-Z0-9_+.-]+$/.test(value?.language ?? "") ? value?.language : "text";
+                    result = `${fence}${language}\n${source}\n${fence}`;
+                    break;
+                }
+            case "equation":
+                {
+                    const expression = block.equation?.expression;
+                    if (expression) result = `$$\n${expression.replace(/[{}<>]/g, (char)=>`\\${char}`)}\n$$`;
+                    break;
+                }
+            case "image":
+                {
+                    const image = imageUrl(block);
+                    if (image) {
+                        const alt = imageAlt(block);
+                        result = `![${alt}](${image})`;
+                    }
+                    break;
+                }
+            case "divider":
+                result = "---";
+                break;
+            case "bookmark":
+            case "link_preview":
+                {
+                    const url = safeUrl(block[block.type]?.url);
+                    if (url) result = `[${url}](${url})`;
+                    break;
+                }
+            case "table":
+                {
+                    const rows = (block.children ?? []).filter((child)=>child.type === "table_row").map((row)=>(row.table_row?.cells ?? []).map((cell)=>text(cell).replace(/\|/g, "\\|")));
+                    if (rows.length) result = rows.map((row, index)=>`| ${row.join(" | ")} |${index === 0 ? `\n| ${row.map(()=>"---").join(" | ")} |` : ""}`).join("\n");
+                    break;
+                }
+        }
+        if (result) fragments.push(result.split("\n").map((line)=>`${indent}${line}`).join("\n"));
+        if (block.children?.length && block.type !== "table") fragments.push(render(block.children, depth + 1));
+    }
+    flush();
+    return fragments.filter(Boolean).join("\n\n");
+}
+function notionBlocksToMarkdown(blocks) {
+    return render(blocks).trim();
+}
+}),
+"[project]/src/lib/notion-images.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "NotionImageConfigError",
+    ()=>NotionImageConfigError,
+    "NotionImageUploadError",
+    ()=>NotionImageUploadError,
+    "notionImageKey",
+    ()=>notionImageKey,
+    "notionImagePublicUrl",
+    ()=>notionImagePublicUrl,
+    "setNotionImageUploaderForTests",
+    ()=>setNotionImageUploaderForTests,
+    "syncNotionImage",
+    ()=>syncNotionImage
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$cos$2d$nodejs$2d$sdk$2d$v5$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/cos-nodejs-sdk-v5/index.js [app-route] (ecmascript)");
+;
+const imageExtensions = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/gif": "gif",
+    "image/webp": "webp",
+    "image/avif": "avif"
+};
+class NotionImageConfigError extends Error {
+}
+class NotionImageUploadError extends Error {
+}
+function config() {
+    const values = {
+        secretId: process.env.COS_SECRET_ID,
+        secretKey: process.env.COS_SECRET_KEY,
+        bucket: process.env.COS_BUCKET,
+        region: process.env.COS_REGION,
+        publicBaseUrl: process.env.COS_PUBLIC_BASE_URL
+    };
+    if (Object.values(values).some((value)=>!value?.trim())) {
+        throw new NotionImageConfigError("COS image storage is not configured");
+    }
+    return {
+        secretId: values.secretId.trim(),
+        secretKey: values.secretKey.trim(),
+        bucket: values.bucket.trim(),
+        region: values.region.trim(),
+        publicBaseUrl: values.publicBaseUrl.trim().replace(/\/+$/, "")
+    };
+}
+function extension(contentType) {
+    const value = imageExtensions[contentType.toLowerCase()];
+    if (!value) throw new NotionImageUploadError("Unsupported image type");
+    return value;
+}
+function notionImageKey(blockId, contentType) {
+    return `notion-images/${blockId}.${extension(contentType)}`;
+}
+function notionImagePublicUrl(blockId, contentType) {
+    const settings = config();
+    return `${settings.publicBaseUrl}/${notionImageKey(blockId, contentType)}`;
+}
+function sdkUploader(input) {
+    const client = new __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$cos$2d$nodejs$2d$sdk$2d$v5$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"]({
+        SecretId: input.config.secretId,
+        SecretKey: input.config.secretKey
+    });
+    return client.putObject({
+        Bucket: input.config.bucket,
+        Region: input.config.region,
+        Key: input.key,
+        Body: Buffer.from(input.body),
+        ContentLength: input.body.byteLength,
+        ContentType: input.contentType,
+        CacheControl: "public, max-age=31536000, immutable"
+    }).then(()=>undefined);
+}
+let uploader = sdkUploader;
+const pending = new Map();
+function setNotionImageUploaderForTests(next) {
+    uploader = next ?? sdkUploader;
+    pending.clear();
+}
+async function syncNotionImage(input) {
+    const settings = config();
+    const contentType = input.contentType.toLowerCase();
+    const key = notionImageKey(input.blockId, contentType);
+    const existing = pending.get(key);
+    if (existing) return existing;
+    const operation = uploader({
+        ...input,
+        contentType,
+        key,
+        config: settings
+    }).then(()=>`${settings.publicBaseUrl}/${key}`).catch((error)=>{
+        throw error instanceof NotionImageConfigError || error instanceof NotionImageUploadError ? error : new NotionImageUploadError("COS image upload failed");
+    }).finally(()=>pending.delete(key));
+    pending.set(key, operation);
+    return operation;
+}
+}),
+"[project]/src/lib/notion.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "downloadNotionImage",
+    ()=>downloadNotionImage,
+    "findPublishedNotionEntry",
+    ()=>findPublishedNotionEntry,
+    "getNotionImageBlock",
+    ()=>getNotionImageBlock,
+    "getNotionPost",
+    ()=>getNotionPost,
+    "getNotionPosts",
+    ()=>getNotionPosts,
+    "hasNotionPost",
+    ()=>hasNotionPost,
+    "indexNotionPages",
+    ()=>indexNotionPages,
+    "isNotionConfigured",
+    ()=>isNotionConfigured,
+    "notionErrorDetails",
+    ()=>notionErrorDetails,
+    "parsePage",
+    ()=>parsePage,
+    "publishedNotionPosts",
+    ()=>publishedNotionPosts
+]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/rsc/react.js [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$object$3e$__ = __turbopack_context__.i("[project]/node_modules/zod/v4/classic/external.js [app-route] (ecmascript) <export * as z .object>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$string$3e$__ = __turbopack_context__.i("[project]/node_modules/zod/v4/classic/external.js [app-route] (ecmascript) <export * as z .string>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$enum$3e$__ = __turbopack_context__.i("[project]/node_modules/zod/v4/classic/external.js [app-route] (ecmascript) <export * as z .enum>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$boolean$3e$__ = __turbopack_context__.i("[project]/node_modules/zod/v4/classic/external.js [app-route] (ecmascript) <export * as z .boolean>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$array$3e$__ = __turbopack_context__.i("[project]/node_modules/zod/v4/classic/external.js [app-route] (ecmascript) <export * as z .array>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$ZodError$3e$__ = __turbopack_context__.i("[project]/node_modules/zod/v4/classic/external.js [app-route] (ecmascript) <export * as z .ZodError>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/utils.ts [app-route] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$notion$2d$blocks$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/notion-blocks.ts [app-route] (ecmascript)");
+;
+;
+;
+;
+const notionApi = "https://api.notion.com/v1";
+const apiVersion = process.env.NOTION_API_VERSION ?? "2022-06-28";
+const contentSchema = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$object$3e$__["z"].object({
+    pageId: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$string$3e$__["z"].string().uuid(),
+    slug: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$string$3e$__["z"].string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    title: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$string$3e$__["z"].string().min(1),
+    description: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$string$3e$__["z"].string().min(1),
+    date: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$string$3e$__["z"].string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    updatedAt: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$string$3e$__["z"].string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    category: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$string$3e$__["z"].string().min(1),
+    contentType: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$enum$3e$__["z"].enum([
+        "blog",
+        "note"
+    ]),
+    published: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$boolean$3e$__["z"].boolean(),
+    tags: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$array$3e$__["z"].array(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$string$3e$__["z"].string()).optional(),
+    cover: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$string$3e$__["z"].string().url().refine((url)=>/^https?:\/\//.test(url)).optional()
+});
+class NotionRequestError extends Error {
+    stage;
+    status;
+    failureType;
+    reason;
+    constructor(stage, status, failureType, reason, options){
+        super(reason, options), this.stage = stage, this.status = status, this.failureType = failureType, this.reason = reason;
+        this.name = failureType;
+    }
+}
+function notionStage(path) {
+    if (path.includes("/databases/") && path.endsWith("/query")) return "database-query";
+    if (path.includes("/children")) return "block-children";
+    if (path.startsWith("/blocks/")) return "image-block";
+    return "unknown";
+}
+function safeErrorMessage(message) {
+    return message.replace(/https?:\/\/[^\s"'<>]+/gi, "[URL redacted]").replace(/\bBearer\s+\S+/gi, "Bearer [redacted]").replace(/((?:token|secret|authorization)\s*[:=]\s*)\S+/gi, "$1[redacted]").slice(0, 200);
+}
+function notionErrorDetails(error) {
+    if (error instanceof NotionRequestError) {
+        return {
+            stage: error.stage,
+            status: error.status,
+            type: error.failureType,
+            reason: error.reason
+        };
+    }
+    return {
+        stage: "unknown",
+        status: undefined,
+        type: error instanceof Error ? error.name : typeof error,
+        reason: error instanceof Error ? safeErrorMessage(error.message) : "unknown error"
+    };
+}
+const notionEnabled = Boolean(process.env.NOTION_TOKEN && process.env.NOTION_DATABASE_ID);
+const fields = {
+    title: "名称",
+    slug: "Slug",
+    description: "摘要",
+    category: "分类",
+    contentType: "类型",
+    status: "状态",
+    date: "发布时间",
+    updatedAt: "Updated At",
+    tags: "Tags"
+};
+function property(page, name) {
+    return page.properties?.[name];
+}
+function richTextValue(value) {
+    if (!Array.isArray(value)) return "";
+    return value.map((part)=>part.plain_text ?? "").join("").trim();
+}
+function selectValue(value) {
+    if (!value || typeof value !== "object") return "";
+    return (value.name ?? "").trim();
+}
+function propertyText(page, name) {
+    const item = property(page, name);
+    if (!item) return "";
+    if (item.type === "title") return richTextValue(item.title);
+    if (item.type === "rich_text") return richTextValue(item.rich_text);
+    if (item.type === "select") return selectValue(item.select);
+    if (item.type === "status") return selectValue(item.status);
+    return "";
+}
+function propertyDate(page, name) {
+    const item = property(page, name);
+    if (item?.type !== "date") return undefined;
+    const value = item.date;
+    return value?.start?.slice(0, 10);
+}
+function pageCover(page) {
+    const cover = page.cover;
+    return cover?.type === "external" && /^https?:\/\//.test(cover.external?.url ?? "") ? cover.external?.url : undefined;
+}
+function contentStatus(value) {
+    if ([
+        "published",
+        "已发布",
+        "完成"
+    ].includes(value)) return {
+        published: true,
+        valid: true
+    };
+    if ([
+        "draft",
+        "草稿",
+        "未开始",
+        "archived",
+        "已归档"
+    ].includes(value)) return {
+        published: false,
+        valid: true
+    };
+    return {
+        published: false,
+        valid: false
+    };
+}
+function parsePage(page) {
+    const statusValue = propertyText(page, fields.status).toLowerCase();
+    const status = contentStatus(statusValue);
+    if (!status.valid) throw new Error(`Invalid property "${fields.status}": unsupported status value`);
+    const rawType = propertyText(page, fields.contentType).toLowerCase();
+    const contentType = rawType === "博客" ? "blog" : rawType === "笔记" ? "note" : rawType;
+    const rawTags = property(page, fields.tags)?.multi_select;
+    return contentSchema.parse({
+        pageId: page.id,
+        slug: propertyText(page, fields.slug),
+        title: propertyText(page, fields.title),
+        description: propertyText(page, fields.description),
+        date: propertyDate(page, fields.date),
+        updatedAt: propertyDate(page, fields.updatedAt),
+        category: propertyText(page, fields.category),
+        contentType,
+        published: status.published,
+        tags: rawTags?.map((tag)=>tag.name ?? "").filter(Boolean),
+        cover: pageCover(page)
+    });
+}
+async function notionFetch(path, init) {
+    const token = process.env.NOTION_TOKEN;
+    if (!token) throw new Error("Notion integration is not configured");
+    let lastError;
+    for(let attempt = 0; attempt < 3; attempt += 1){
+        let status;
+        try {
+            const response = await fetch(`${notionApi}${path}`, {
+                ...init,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Notion-Version": apiVersion,
+                    "Content-Type": "application/json",
+                    ...init?.headers
+                },
+                signal: AbortSignal.timeout(10_000),
+                ...init?.cache === "no-store" ? {} : {
+                    next: {
+                        revalidate: 300,
+                        tags: [
+                            "posts"
+                        ]
+                    }
+                }
+            });
+            status = response.status;
+            if (response.ok) {
+                try {
+                    return await response.json();
+                } catch (error) {
+                    throw new NotionRequestError(notionStage(path), status, "NotionResponseError", "Invalid JSON response", {
+                        cause: error
+                    });
+                }
+            }
+            const failureType = response.status === 429 || response.status >= 500 ? "NotionServiceError" : "NotionRequestError";
+            const failure = new NotionRequestError(notionStage(path), status, failureType, response.status === 429 ? "Rate limited" : `Notion API returned ${response.status}`);
+            if (response.status !== 429 && response.status < 500) throw failure;
+            lastError = failure;
+        } catch (error) {
+            if (error instanceof NotionRequestError && error.failureType === "NotionRequestError" && error.status !== 429 && (error.status ?? 0) < 500) throw error;
+            lastError = error instanceof NotionRequestError ? error : new NotionRequestError(notionStage(path), status, error instanceof Error ? error.name : "UnknownError", error instanceof Error ? safeErrorMessage(error.message) : "unknown error", {
+                cause: error
+            });
+        }
+        if (attempt < 2) await new Promise((resolve)=>setTimeout(resolve, 250 * 2 ** attempt));
+    }
+    if (lastError instanceof NotionRequestError) throw lastError;
+    throw new NotionRequestError(notionStage(path), undefined, "NotionRequestError", "Notion API request failed", {
+        cause: lastError
+    });
+}
+async function paginated(path, method) {
+    const result = [];
+    let cursor;
+    do {
+        const options = {
+            page_size: 100,
+            ...cursor ? {
+                start_cursor: cursor
+            } : {}
+        };
+        const response = method === "POST" ? await notionFetch(path, {
+            method,
+            body: JSON.stringify(options)
+        }) : await notionFetch(`${path}?${new URLSearchParams(Object.entries(options).map(([key, value])=>[
+                key,
+                String(value)
+            ]))}`);
+        result.push(...response.results);
+        cursor = response.has_more ? response.next_cursor ?? undefined : undefined;
+    }while (cursor)
+    return result;
+}
+function indexNotionPages(pages) {
+    const entries = pages.flatMap((page)=>{
+        const slug = propertyText(page, fields.slug);
+        const status = contentStatus(propertyText(page, fields.status).toLowerCase());
+        if (status.valid && !status.published) {
+            return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) ? [
+                {
+                    pageId: page.id,
+                    slug
+                }
+            ] : [];
+        }
+        try {
+            return [
+                {
+                    pageId: page.id,
+                    slug,
+                    post: parsePage(page)
+                }
+            ];
+        } catch (error) {
+            const reason = error instanceof __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$zod$2f$v4$2f$classic$2f$external$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$export__$2a$__as__z__$2e$ZodError$3e$__["z"].ZodError ? error.issues.map((issue)=>`${issue.path.join(".")}: ${issue.code}`).join(", ") : error instanceof Error ? error.message : "unknown error";
+            console.error("Notion page parse failed", {
+                pageId: page.id,
+                stage: "properties",
+                reason
+            });
+            return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) ? [
+                {
+                    pageId: page.id,
+                    slug
+                }
+            ] : [];
+        }
+    });
+    return entries.sort((a, b)=>(b.post?.date ?? "").localeCompare(a.post?.date ?? ""));
+}
+const getNotionIndex = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["cache"])(async ()=>{
+    const pages = await paginated(`/databases/${process.env.NOTION_DATABASE_ID}/query`, "POST");
+    return indexNotionPages(pages);
+});
+async function getBlockChildren(blockId) {
+    return paginated(`/blocks/${blockId}/children`, "GET");
+}
+async function expandBlocks(blocks, depth = 0) {
+    if (depth > 12) throw new Error("Notion block nesting limit exceeded");
+    return Promise.all(blocks.map(async (block)=>{
+        if (!block.has_children) return block;
+        const children = await getBlockChildren(block.id);
+        return {
+            ...block,
+            children: await expandBlocks(children, depth + 1)
+        };
+    }));
+}
+function isNotionConfigured() {
+    return notionEnabled;
+}
+function publishedNotionPosts(entries) {
+    return entries.flatMap((entry)=>{
+        if (!entry.post?.published) return [];
+        const { pageId, ...post } = entry.post;
+        void pageId;
+        return [
+            post
+        ];
+    });
+}
+async function getNotionPosts() {
+    return publishedNotionPosts(await getNotionIndex());
+}
+async function hasNotionPost(slug) {
+    return (await getNotionIndex()).some((entry)=>entry.slug === slug);
+}
+function findPublishedNotionEntry(entries, slug) {
+    const matches = entries.filter((entry)=>entry.slug === slug);
+    if (matches.length !== 1) return undefined;
+    return matches[0].post?.published ? matches[0].post : undefined;
+}
+async function getNotionImageBlock(blockId) {
+    if (!notionEnabled) return undefined;
+    try {
+        return await notionFetch(`/blocks/${blockId}`, {
+            cache: "no-store"
+        });
+    } catch (error) {
+        if (error instanceof Error && error.message === "Notion API returned 404") return undefined;
+        throw error;
+    }
+}
+async function downloadNotionImage(url) {
+    return fetch(url, {
+        redirect: "error",
+        signal: AbortSignal.timeout(10_000),
+        cache: "no-store"
+    });
+}
+async function getNotionPost(slug) {
+    const post = findPublishedNotionEntry(await getNotionIndex(), slug);
+    if (!post) return undefined;
+    const blocks = await getBlockChildren(post.pageId);
+    const expandedBlocks = await expandBlocks(blocks);
+    const content = (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$notion$2d$blocks$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["notionBlocksToMarkdown"])(expandedBlocks);
+    const { pageId, ...publicPost } = post;
+    void pageId;
+    return {
+        post: {
+            ...publicPost,
+            readingTime: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["readingTime"])(content)
+        },
+        content
+    };
+}
+}),
+"[project]/src/lib/utils.ts [app-route] (ecmascript)", ((__turbopack_context__) => {
+"use strict";
+
+__turbopack_context__.s([
+    "cn",
+    ()=>cn,
+    "formatDate",
+    ()=>formatDate,
+    "readingTime",
+    ()=>readingTime
+]);
+function cn(...classes) {
+    return classes.filter(Boolean).join(" ");
+}
+const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+});
+function formatDate(date) {
+    return dateFormatter.format(new Date(date));
+}
+function readingTime(content) {
+    const chinese = content.match(/[一-鿿]/g)?.length ?? 0;
+    const words = content.replace(/[一-鿿]/g, " ").split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.ceil((chinese + words) / 300));
+}
+}),
+]})(),
+"[externals]/assert [external] (assert, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("assert", () => require("assert"));
+
+module.exports = mod;
+}),
+"[externals]/buffer [external] (buffer, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("buffer", () => require("buffer"));
+
+module.exports = mod;
+}),
+"[externals]/crypto [external] (crypto, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("crypto", () => require("crypto"));
+
+module.exports = mod;
+}),
+"[externals]/events [external] (events, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("events", () => require("events"));
+
+module.exports = mod;
+}),
+"[externals]/fs [external] (fs, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("fs", () => require("fs"));
+
+module.exports = mod;
+}),
+"[externals]/http [external] (http, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("http", () => require("http"));
+
+module.exports = mod;
+}),
+"[externals]/https [external] (https, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("https", () => require("https"));
+
+module.exports = mod;
+}),
+"[externals]/net [external] (net, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("net", () => require("net"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/compiled/@opentelemetry/api [external] (next/dist/compiled/@opentelemetry/api, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("next/dist/compiled/@opentelemetry/api", () => require("next/dist/compiled/@opentelemetry/api"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-page-turbo.runtime.dev.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("next/dist/compiled/next-server/app-page-turbo.runtime.dev.js", () => require("next/dist/compiled/next-server/app-page-turbo.runtime.dev.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js [external] (next/dist/compiled/next-server/app-route-turbo.runtime.dev.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("next/dist/compiled/next-server/app-route-turbo.runtime.dev.js", () => require("next/dist/compiled/next-server/app-route-turbo.runtime.dev.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/server/app-render/work-async-storage.external.js [external] (next/dist/server/app-render/work-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("next/dist/server/app-render/work-async-storage.external.js", () => require("next/dist/server/app-render/work-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/server/app-render/work-unit-async-storage.external.js [external] (next/dist/server/app-render/work-unit-async-storage.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("next/dist/server/app-render/work-unit-async-storage.external.js", () => require("next/dist/server/app-render/work-unit-async-storage.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/server/runtime-reacts.external.js [external] (next/dist/server/runtime-reacts.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("next/dist/server/runtime-reacts.external.js", () => require("next/dist/server/runtime-reacts.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/next/dist/shared/lib/no-fallback-error.external.js [external] (next/dist/shared/lib/no-fallback-error.external.js, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("next/dist/shared/lib/no-fallback-error.external.js", () => require("next/dist/shared/lib/no-fallback-error.external.js"));
+
+module.exports = mod;
+}),
+"[externals]/node:stream [external] (node:stream, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("node:stream", () => require("node:stream"));
+
+module.exports = mod;
+}),
+"[externals]/os [external] (os, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("os", () => require("os"));
+
+module.exports = mod;
+}),
+"[externals]/path [external] (path, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("path", () => require("path"));
+
+module.exports = mod;
+}),
+"[externals]/querystring [external] (querystring, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("querystring", () => require("querystring"));
+
+module.exports = mod;
+}),
+"[externals]/stream [external] (stream, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("stream", () => require("stream"));
+
+module.exports = mod;
+}),
+"[externals]/tls [external] (tls, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("tls", () => require("tls"));
+
+module.exports = mod;
+}),
+"[externals]/url [external] (url, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("url", () => require("url"));
+
+module.exports = mod;
+}),
+"[externals]/util [external] (util, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("util", () => require("util"));
+
+module.exports = mod;
+}),
+"[externals]/zlib [external] (zlib, cjs)", ((__turbopack_context__, module, exports) => {
+
+var mod = __turbopack_context__.x("zlib", () => require("zlib"));
+
+module.exports = mod;
+}),
+];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__0-kqqkfrq7rri._.js.map

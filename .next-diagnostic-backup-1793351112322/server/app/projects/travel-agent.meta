@@ -1,0 +1,39 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/projects/layout,_N_T_/projects/[slug]/layout,_N_T_/projects/[slug]/page,_N_T_/projects/travel-agent"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/projects/$d$slug/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 64,
+    "slots": {
+      "children": {
+        "hints": 96,
+        "slots": {
+          "children": {
+            "hints": 96,
+            "slots": {
+              "children": {
+                "hints": 160,
+                "slots": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/fa986778f843ebdb40cd422e3b5ade6866b0745b2d0a0c4012f4ab4008f14fc9/$/projects/travel-agent",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/projects/[slug]/page"
+    },
+    "isFallback": false
+  }
+}

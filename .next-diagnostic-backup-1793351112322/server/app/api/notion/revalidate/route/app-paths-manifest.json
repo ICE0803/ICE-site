@@ -1,0 +1,3 @@
+{
+  "/api/notion/revalidate/route": "app/api/notion/revalidate/route.js"
+}

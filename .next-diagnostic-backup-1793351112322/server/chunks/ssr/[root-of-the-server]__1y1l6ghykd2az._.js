@@ -1,0 +1,19 @@
+module.exports=[[27572,a=>{var b=a.i(7997),c=a.i(47591);let d={className:c.default.className,style:{fontFamily:"'Inter', 'Inter Fallback'",fontStyle:"normal"}};null!=c.default.variable&&(d.variable=c.default.variable);var e=a.i(77263);let f={className:e.default.className,style:{fontFamily:"'JetBrains Mono', 'JetBrains Mono Fallback'",fontStyle:"normal"}};null!=e.default.variable&&(f.variable=e.default.variable);var g=a.i(78147),h=a.i(1514),i=a.i(94732),j=a.i(4120),k=a.i(55239);let l=`(function () {
+  try {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (typeof IntersectionObserver !== "function") return;
+    document.documentElement.setAttribute("data-motion", "on");
+  } catch (e) {}
+})();`,m={metadataBase:new URL(k.f.url),title:{default:k.f.title,template:`%s | ${k.f.name}`},description:k.f.description,openGraph:{type:"website",locale:"zh_CN",url:k.f.url,siteName:k.f.title,title:k.f.title,description:k.f.description},twitter:{card:"summary",title:k.f.title,description:k.f.description}},n=`(function () {
+  try {
+    var t = localStorage.getItem("theme");
+    if (t !== "light" && t !== "dark") {
+      t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+})();`;a.s(["default",0,function({children:a}){return(0,b.jsxs)("html",{lang:"zh-CN",suppressHydrationWarning:!0,className:`${d.variable} ${f.variable} h-full antialiased`,children:[(0,b.jsxs)("head",{children:[(0,b.jsx)("script",{dangerouslySetInnerHTML:{__html:n}}),(0,b.jsx)("script",{dangerouslySetInnerHTML:{__html:l}})]}),(0,b.jsxs)("body",{className:"flex min-h-full flex-col",children:[(0,b.jsx)(g.Header,{}),(0,b.jsx)(i.PageTransition,{children:a}),(0,b.jsx)(h.Footer,{}),(0,b.jsx)(j.MotionProvider,{})]})]})},"metadata",0,m],27572)},63145,a=>{let b=(0,a.i(11857).registerClientReference)(function(){throw Error("Attempted to call Footer() from the server but Footer is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.")},"[project]/src/components/layout/Footer.tsx","Footer");a.s(["Footer",0,b])},1514,a=>{var b=a.i(63145);a.n(b)},60079,a=>{let b=(0,a.i(11857).registerClientReference)(function(){throw Error("Attempted to call Header() from the server but Header is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.")},"[project]/src/components/layout/Header.tsx","Header");a.s(["Header",0,b])},78147,a=>{var b=a.i(60079);a.n(b)},99735,a=>{let b=(0,a.i(11857).registerClientReference)(function(){throw Error("Attempted to call PageTransition() from the server but PageTransition is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.")},"[project]/src/components/layout/page-transition.tsx","PageTransition");a.s(["PageTransition",0,b])},94732,a=>{var b=a.i(99735);a.n(b)},75145,a=>{let b=(0,a.i(11857).registerClientReference)(function(){throw Error("Attempted to call MotionProvider() from the server but MotionProvider is on the client. It's not possible to invoke a client function from the server, it can only be rendered as a Component or passed to props of a Client Component.")},"[project]/src/components/motion/motion-provider.tsx","MotionProvider");a.s(["MotionProvider",0,b])},4120,a=>{var b=a.i(75145);a.n(b)}],47591,a=>{a.v({className:"LINzvG_className",variable:"LINzvG_variable"})},77263,a=>{a.v({className:"VxV-Ta_className",variable:"VxV-Ta_variable"})},50645,function(a){a.n(a.i(27572))}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__1y1l6ghykd2az._.js.map

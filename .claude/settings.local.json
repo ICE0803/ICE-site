@@ -75,7 +75,12 @@
       "Bash(gh pr *)",
       "Bash(git -C \"D:/ice_personal_site\" diff src/lib/notion-blocks.ts src/lib/notion-blocks.test.ts)",
       "Bash(npm test *)",
-      "Bash(git -C .claude/worktrees/next-16-4-3-security status --porcelain=v1)"
+      "Bash(git -C .claude/worktrees/next-16-4-3-security status --porcelain=v1)",
+      "WebFetch(domain:docs.cloudbase.net)",
+      "Bash(npm -v)",
+      "Bash(npm --version)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(git -C . log --oneline -5)"
     ]
   }
 }

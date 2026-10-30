@@ -97,6 +97,72 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+@property --theme-reveal-radius {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: -64px;
+}
+
+html[data-theme-transition="radial"]::view-transition,
+html[data-theme-transition="radial"]::view-transition-group(root),
+html[data-theme-transition="radial"]::view-transition-image-pair(root),
+html[data-theme-transition="radial"]::view-transition-old(root),
+html[data-theme-transition="radial"]::view-transition-new(root) {
+  pointer-events: none;
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html[data-theme-transition="radial"]::view-transition-old(root) {
+  z-index: 2;
+  mask-image: radial-gradient(
+    circle at var(--theme-origin-x) var(--theme-origin-y),
+    transparent max(0px, calc(var(--theme-reveal-radius) - 64px)),
+    #000 calc(var(--theme-reveal-radius) + 64px)
+  );
+  animation: ice-theme-reveal 820ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html[data-theme-transition="radial"]::view-transition-new(root) {
+  z-index: 1;
+}
+
+/* Snapshot both themes at their final colors, without nested color transitions. */
+html[data-theme-transition="radial"] *,
+html[data-theme-transition="radial"] *::before,
+html[data-theme-transition="radial"] *::after {
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+@keyframes ice-theme-reveal {
+  from { --theme-reveal-radius: -64px; }
+  to { --theme-reveal-radius: var(--theme-reveal-end); }
+}
+
+html[data-theme-transition="fallback"] *,
+html[data-theme-transition="fallback"] *::before,
+html[data-theme-transition="fallback"] *::after {
+  transition-property: color, background-color, border-color, box-shadow, fill, stroke, filter !important;
+  transition-duration: 820ms !important;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-delay: 0s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme-transition] *,
+  html[data-theme-transition] *::before,
+  html[data-theme-transition] *::after {
+    transition-duration: 0s !important;
+  }
+
+  html[data-theme-transition="radial"]::view-transition-old(root) {
+    animation: none;
+    mask-image: none;
+    opacity: 0;
+  }
+}
+
 /* 内容容器：随视口平滑加宽，避免在 1280–1536 之间留出大片空白。
    上限 80rem 是为了让正文行宽不失控。 */
 .container-page {

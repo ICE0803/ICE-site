@@ -1,0 +1,3 @@
+{
+  "/api/notion/images/[id]/route": "app/api/notion/images/[id]/route.js"
+}

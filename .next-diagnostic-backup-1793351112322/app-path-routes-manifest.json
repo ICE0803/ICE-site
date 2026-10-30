@@ -1,0 +1,18 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/about/page": "/about",
+  "/api/notion/images/[id]/route": "/api/notion/images/[id]",
+  "/api/notion/revalidate/route": "/api/notion/revalidate",
+  "/blog/[slug]/page": "/blog/[slug]",
+  "/blog/page": "/blog",
+  "/favicon.ico/route": "/favicon.ico",
+  "/icon.png/route": "/icon.png",
+  "/page": "/",
+  "/projects/[slug]/page": "/projects/[slug]",
+  "/projects/page": "/projects",
+  "/robots.txt/route": "/robots.txt",
+  "/rss.xml/route": "/rss.xml",
+  "/search/page": "/search",
+  "/sitemap.xml/route": "/sitemap.xml"
+}
