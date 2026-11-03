@@ -80,7 +80,7 @@ export function Header() {
       </div>
 
       {open && (
-        <div className="container-page md:hidden">
+        <div className="container-page pointer-events-auto md:hidden">
           <nav className="glass flex flex-col gap-1 rounded-2xl p-2 backdrop-blur-xl backdrop-saturate-150">
             {navItems.map((item) => (
               <Link
