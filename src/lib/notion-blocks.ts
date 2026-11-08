@@ -1,3 +1,10 @@
+type ImageMap = Record<string, { slug: string; path: string }>
+type RenderOptions = { slug?: string; images?: ImageMap }
+
+export function isLocalBlogImagePath(value: string): boolean {
+  return /^\/blog\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-zA-Z0-9_-]+\.(?:png|jpe?g|gif|webp|avif)$/.test(value)
+}
+
 type RichText = {
   plain_text?: string
   href?: string | null
@@ -50,7 +57,9 @@ function richText(block: Block): RichText[] {
   return (block[block.type] as { rich_text?: RichText[] } | undefined)?.rich_text ?? []
 }
 
-function imageUrl(block: Block): string | undefined {
+function imageUrl(block: Block, options: RenderOptions): string | undefined {
+  const local = options.images?.[block.id ?? ""]
+  if (local && (!options.slug || local.slug === options.slug) && isLocalBlogImagePath(local.path)) return local.path
   const image = block.image as {
     type?: string
     external?: { url?: string }
@@ -65,6 +74,7 @@ function imageUrl(block: Block): string | undefined {
       ? `/api/notion/images/${id}`
       : undefined
   }
+
   return undefined
 }
 
@@ -74,7 +84,7 @@ function imageAlt(block: Block): string {
   return raw.replace(/\\([{}<>\[\]*_!~|])/g, "$1").replace(/`/g, "")
 }
 
-function render(blocks: Block[], depth = 0): string {
+function render(blocks: Block[], options: RenderOptions, depth = 0): string {
   const fragments: string[] = []
   let list: string[] = []
   let listType = ""
@@ -92,14 +102,22 @@ function render(blocks: Block[], depth = 0): string {
       listType = block.type
       const checked = (block.to_do as { checked?: boolean } | undefined)?.checked
       const marker = block.type === "bulleted_list_item" ? "-" : block.type === "numbered_list_item" ? `${list.length + 1}.` : `- [${checked ? "x" : " "}]`
-      const children = block.children?.length ? `\n${render(block.children, depth + 1).replace(/\n\n/g, "\n")}` : ""
+      const children = block.children?.length ? `\n${render(block.children, options, depth + 1).replace(/\n\n/g, "\n")}` : ""
       list.push(`${indent}${marker} ${content}${children}`)
       continue
     }
     flush()
     let result = ""
     switch (block.type) {
-      case "paragraph": result = content; break
+      case "paragraph": {
+        const parts = richText(block)
+        const literal = parts.map((part) => part.plain_text ?? "").join("")
+        const localImage = /^!\[([^\[\]\r\n]*)\]\(([^\s)]+)\)$/.exec(literal)
+        result = localImage && isLocalBlogImagePath(localImage[2]) && parts.every((part) => !part.href && !Object.values(part.annotations ?? {}).some(Boolean))
+          ? `![${escapeText(localImage[1]).replace(/`/g, "\\`")}](${localImage[2]})`
+          : content
+        break
+      }
       case "heading_1": result = `# ${content}`; break
       case "heading_2": result = `## ${content}`; break
       case "heading_3": result = `### ${content}`; break
@@ -119,7 +137,7 @@ function render(blocks: Block[], depth = 0): string {
         break
       }
       case "image": {
-        const image = imageUrl(block)
+        const image = imageUrl(block, options)
         if (image) {
           const alt = imageAlt(block)
           result = `![${alt}](${image})`
@@ -141,12 +159,12 @@ function render(blocks: Block[], depth = 0): string {
       }
     }
     if (result) fragments.push(result.split("\n").map((line) => `${indent}${line}`).join("\n"))
-    if (block.children?.length && block.type !== "table") fragments.push(render(block.children, depth + 1))
+    if (block.children?.length && block.type !== "table") fragments.push(render(block.children, options, depth + 1))
   }
   flush()
   return fragments.filter(Boolean).join("\n\n")
 }
 
-export function notionBlocksToMarkdown(blocks: Block[]): string {
-  return render(blocks).trim()
+export function notionBlocksToMarkdown(blocks: Block[], options: RenderOptions = {}): string {
+  return render(blocks, options).trim()
 }

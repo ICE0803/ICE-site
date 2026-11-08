@@ -7,11 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test src/lib/notion-blocks.test.ts src/lib/notion-images.test.ts src/lib/notion.test.ts src/app/api/notion/images/route.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/notion-blocks.test.ts src/lib/notion.test.ts src/lib/notion-image-migration.test.ts",
+    "migrate:notion-images": "node --experimental-strip-types scripts/migrate-notion-images.ts",
+    "verify:notion-images": "node --experimental-strip-types scripts/verify-notion-images.ts"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.20",
-    "cos-nodejs-sdk-v5": "^3.0.0",
     "echarts": "^6.1.0",
     "gray-matter": "^4.0.3",
     "katex": "^0.19.0",

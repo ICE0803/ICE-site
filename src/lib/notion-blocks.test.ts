@@ -41,6 +41,33 @@ test("ignores image blocks without valid HTTP or HTTPS URLs", () => {
   assert.equal(markdown, "")
 })
 
+test("prefers local mappings through nested blocks without changing captions", () => {
+  const id = "00000000-0000-4000-8000-000000000010"
+  for (const type of ["file", "external"]) {
+    const markdown = notionBlocksToMarkdown([{ type: "toggle", children: [
+      { id, type: "image", image: { type, [type]: { url: "https://example.com/image.png" }, caption: [{ plain_text: "截图" }] } },
+    ] }], { slug: "sample", images: { [id]: { slug: "sample", path: "/blog/sample/image.png" } } })
+    assert.equal(markdown, "![截图](/blog/sample/image.png)")
+  }
+})
+
+test("rejects unsafe or mismatched local mappings", () => {
+  const id = "00000000-0000-4000-8000-000000000010"
+  const blocks = [{ id, type: "image", image: { type: "file" } }]
+  for (const path of ["/blog/sample/../secret.png", "https://example.com/image.png", "/blog/sample/image.png?x=1"]) {
+    assert.match(notionBlocksToMarkdown(blocks, { slug: "sample", images: { [id]: { slug: "sample", path } } }), /\/api\/notion\/images\//)
+  }
+  assert.match(notionBlocksToMarkdown(blocks, { slug: "other", images: { [id]: { slug: "sample", path: "/blog/sample/image.png" } } }), /\/api\/notion\/images\//)
+})
+
+test("allows only standalone safe local-image syntax in Notion paragraphs", () => {
+  const paragraph = (plain_text: string) => [{ type: "paragraph", paragraph: { rich_text: [{ plain_text }] } }]
+  assert.equal(notionBlocksToMarkdown(paragraph("![个人网站首页](/blog/personal-website/website-home.png)")), "![个人网站首页](/blog/personal-website/website-home.png)")
+  for (const value of ["![x](javascript:alert(1))", "![x](/blog/sample/../secret.png)", "<img src='/blog/sample/a.png' />", "prefix ![x](/blog/sample/a.png)"]) {
+    assert.notEqual(notionBlocksToMarkdown(paragraph(value)), value)
+  }
+})
+
 test("keeps literal Markdown markers out of Notion text", () => {
   const markdown = notionBlocksToMarkdown([
     { type: "paragraph", paragraph: { rich_text: [{ plain_text: "# title\n- item\n```js\n{run()}" }] } },

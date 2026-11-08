@@ -1,0 +1,18 @@
+{
+  "40547668-1e57-80ab-9d13-e0fd741555a4": {
+    "slug": "building-ice-personal-site",
+    "path": "/blog/building-ice-personal-site/image-e2cb018b86.png",
+    "contentType": "image/png",
+    "bytes": 1142771,
+    "sha256": "4cc3e1550a05b4d0e92d020ddc636d29fe808b5a5bf6bd112b1a63741c3e6529",
+    "sourceType": "file"
+  },
+  "40647668-1e57-8012-9f2f-cd6b815bb6a2": {
+    "slug": "building-ice-personal-site",
+    "path": "/blog/building-ice-personal-site/image.png",
+    "contentType": "image/png",
+    "bytes": 966738,
+    "sha256": "e0921e3c148c1948ee0e0a8b9e2b4bb72de40b8fb2463e3a33fa0cf7fad5c76a",
+    "sourceType": "file"
+  }
+}

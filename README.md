@@ -75,7 +75,7 @@ ICE 是一个以个人主页为入口，记录技术实践、项目经历、旅�
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/) 4
 - [Notion API](https://developers.notion.com/)：博客内容管理
-- [腾讯云 COS](https://cloud.tencent.com/product/cos)：缓存 Notion 图片
+- `public/blog`：随站点部署的博客图片
 - [ECharts](https://echarts.apache.org/)：旅行足迹地图
 - `next-mdx-remote-client`、`remark-gfm`、`remark-math`、`rehype-katex`、`rehype-pretty-code`：MDX 内容处理
 - `zod`：文章和 Notion 数据校验
@@ -96,9 +96,9 @@ ICE 是一个以个人主页为入口，记录技术实践、项目经历、旅�
 
 本地 MDX 文件通过 frontmatter 保存标题、摘要、日期、分类、内容类型和发布状态等信息。Notion 内容则会经过字段映射和 `zod` 校验后转换为统一的文章结构。
 
-### Notion 图片与腾讯云 COS
+### Notion 图片与本地静态资源
 
-Notion 的 file 图片通过 `/api/notion/images/[id]` 代理获取。服务端会校验图片来源、类型和大小，再将图片以 `notion-images/{blockId}.{extension}` 的路径上传到腾讯云 COS，并重定向到公开图片地址。上传过程使用内存中的 pending map 合并相同图片的并发请求，并通过长期缓存控制减少重复加载。
+Notion 图片通过 `npm run migrate:notion-images` 下载到 `public/blog/{slug}`，并由 `src/data/notion-image-map.json` 记录 Block ID 到本地路径的映射。迁移命令支持 `--dry-run`，完成后可使用 `npm run verify:notion-images` 校验文件大小、哈希和图片格式。图片随站点构建和部署，不保存 Notion 临时签名 URL。
 
 ### 博客缓存与更新
 
@@ -117,10 +117,10 @@ Notion API 请求默认使用 300 秒缓存，并使用 `posts` 标签关联缓�
 ```text
 .
 ├── content/posts/       # 本地 MDX 博客和笔记
-├── public/              # 静态资源、旅行地图 GeoJSON 和旅行照片
+├── public/              # 静态资源、博客图片、旅行地图 GeoJSON 和旅行照片
 ├── src/app/             # App Router 页面、布局和 API 路由
 ├── src/components/      # 首页、博客、项目、旅行地图和兴趣档案组件
 ├── src/data/            # 站点配置、项目、旅行和兴趣数据
-├── src/lib/             # Notion、MDX、文章和图片处理逻辑
+├── src/lib/             # Notion、MDX、文章和图片迁移处理逻辑
 └── src/types/           # 共享 TypeScript 类型
 ```

@@ -3,7 +3,8 @@ import { z } from "zod"
 
 import type { Post } from "@/types"
 import { readingTime } from "@/lib/utils"
-import { notionBlocksToMarkdown } from "@/lib/notion-blocks"
+import { isLocalBlogImagePath, notionBlocksToMarkdown } from "@/lib/notion-blocks"
+import imageMap from "../data/notion-image-map.json" with { type: "json" }
 
 const notionApi = "https://api.notion.com/v1"
 const apiVersion = process.env.NOTION_API_VERSION ?? "2022-06-28"
@@ -19,7 +20,7 @@ const contentSchema = z.object({
   contentType: z.enum(["blog", "note"]),
   published: z.boolean(),
   tags: z.array(z.string()).optional(),
-  cover: z.string().url().refine((url) => /^https?:\/\//.test(url)).optional(),
+  cover: z.string().refine((value) => isLocalBlogImagePath(value) || /^https?:\/\//.test(value) && URL.canParse(value)).optional(),
 })
 
 type NotionResult = { results: Record<string, unknown>[]; next_cursor?: string | null; has_more?: boolean }
@@ -31,15 +32,24 @@ type IndexEntry = { pageId: string; slug: string; post?: ContentPost }
 type NotionStage = "database-query" | "block-children" | "image-block" | "unknown"
 
 class NotionRequestError extends Error {
+  readonly stage: NotionStage
+  readonly status: number | undefined
+  readonly failureType: string
+  readonly reason: string
+
   constructor(
-    readonly stage: NotionStage,
-    readonly status: number | undefined,
-    readonly failureType: string,
-    readonly reason: string,
+    stage: NotionStage,
+    status: number | undefined,
+    failureType: string,
+    reason: string,
     options?: ErrorOptions,
   ) {
     super(reason, options)
     this.name = failureType
+    this.stage = stage
+    this.status = status
+    this.failureType = failureType
+    this.reason = reason
   }
 }
 
@@ -116,6 +126,8 @@ function propertyDate(page: NotionPage, name: string): string | undefined {
 }
 
 function pageCover(page: NotionPage): string | undefined {
+  const local = (imageMap as Record<string, { slug: string; path: string }>)[`cover:${page.id}`]
+  if (local && local.slug === propertyText(page, fields.slug) && isLocalBlogImagePath(local.path)) return local.path
   const cover = page.cover as { type?: string; external?: { url?: string } } | null | undefined
   return cover?.type === "external" && /^https?:\/\//.test(cover.external?.url ?? "")
     ? cover.external?.url
@@ -296,12 +308,32 @@ export async function downloadNotionImage(url: string): Promise<Response> {
   return fetch(url, { redirect: "error", signal: AbortSignal.timeout(10_000), cache: "no-store" })
 }
 
+export async function getNotionMigrationPages() {
+  if (!isNotionConfigured()) throw new Error("Notion integration is not configured")
+  const pages = await paginated<NotionPage>(`/databases/${process.env.NOTION_DATABASE_ID}/query`, "POST")
+  const published = pages.filter((page) => {
+    const status = contentStatus(propertyText(page, fields.status).toLowerCase())
+    if (!status.valid) throw new Error(`Invalid publication status on page ${page.id}`)
+    return status.published
+  }).map((page) => ({ post: parsePage(page), cover: page.cover }))
+  const slugs = new Set<string>()
+  for (const { post } of published) {
+    if (slugs.has(post.slug)) throw new Error(`Duplicate published slug: ${post.slug}`)
+    slugs.add(post.slug)
+  }
+  return published
+}
+
+export async function getNotionPageBlocks(pageId: string) {
+  return expandBlocks(await getBlockChildren(pageId))
+}
+
 export async function getNotionPost(slug: string): Promise<PostContent | undefined> {
   const post = findPublishedNotionEntry(await getNotionIndex(), slug)
   if (!post) return undefined
   const blocks = await getBlockChildren(post.pageId)
   const expandedBlocks = await expandBlocks(blocks)
-  const content = notionBlocksToMarkdown(expandedBlocks)
+  const content = notionBlocksToMarkdown(expandedBlocks, { slug: post.slug, images: imageMap })
   const { pageId, ...publicPost } = post
   void pageId
   return { post: { ...publicPost, readingTime: readingTime(content) }, content }

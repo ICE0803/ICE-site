@@ -80,7 +80,8 @@
       "Bash(npm -v)",
       "Bash(npm --version)",
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
-      "Bash(git -C . log --oneline -5)"
+      "Bash(git -C . log --oneline -5)",
+      "Bash(git -C \"D:/ice_personal_site\" log -5 --oneline)"
     ]
   }
 }
